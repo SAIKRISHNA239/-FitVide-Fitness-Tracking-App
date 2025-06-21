@@ -1,39 +1,38 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+// app/_layout.tsx
+import { Slot } from "expo-router";
+import { NutritionProvider } from "../context/NutritionContext";
+import { ThemeProvider } from "../context/ThemeContext";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+import { View, ActivityIndicator } from "react-native";
+import LoginScreen from "./LoginScreen"; // Adjust path if needed
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+function RootLayout() {
+  const { user, loading } = useAuth();
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#121212", justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#6200EE" />
+      </View>
+    );
   }
 
+  if (!user) {
+    return <LoginScreen />;
+  }
+
+  return <Slot />;
+}
+
+export default function Layout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+    <ThemeProvider>
+      <NutritionProvider>
+        <AuthProvider>
+          <RootLayout />
+        </AuthProvider>
+      </NutritionProvider>
     </ThemeProvider>
   );
 }
+

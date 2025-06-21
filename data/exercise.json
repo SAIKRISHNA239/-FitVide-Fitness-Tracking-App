@@ -1,0 +1,2709 @@
+[
+    {
+      "workout": "Chest",
+      "region": "Upper Region",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Incline Machine Chest Press",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Smith Machine Incline Bench Press",
+            "equipment": "Smith Machine",
+            "level": "Beginner",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Incline Push-Ups",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Upper Chest",
+            "type": "Bodyweight"
+          },
+          {
+            "name": "Resistance Band Incline Press",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Resistance Band Low to High Fly",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Upper Chest",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Incline Barbell Bench Press",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Incline Dumbbell Press",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Incline Dumbbell Fly",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Isolation"
+          },
+          {
+            "name": "Incline Cable Fly",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Isolation"
+          },
+          {
+            "name": "Low to High Cable Crossover",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Upper Chest Press",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Landmine Chest Press",
+            "equipment": "Barbell (Landmine)",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Incline Hammer Strength Press",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Incline Dumbbell Twist Press",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Incline Hex Press",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Incline Dumbbell Squeeze Press",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "TRX Incline Chest Press",
+            "equipment": "Suspension Trainer (TRX)",
+            "level": "Advanced",
+            "focus": "Upper Chest",
+            "type": "Bodyweight"
+          },
+          {
+            "name": "Reverse-Grip Barbell Bench Press",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Guillotine Press",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Upper Chest",
+            "type": "Compound"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Chest",
+      "region": "Middle Region",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Flat Machine Chest Press",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Flat Smith Machine Bench Press",
+            "equipment": "Smith Machine",
+            "level": "Beginner",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Flat Dumbbell Press (Light Weight)",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Chest Dips (Assisted or Bench)",
+            "equipment": "Bodyweight or Machine",
+            "level": "Beginner",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Barbell Bench Press (Flat)",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Dumbbell Bench Press",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Dumbbell Fly (Flat Bench)",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Mid Chest",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Crossover (Mid-Pulley to Mid-Pulley)",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Mid Chest",
+            "type": "Isolation"
+          },
+          {
+            "name": "Standing Cable Chest Press",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Pec Deck Machine (Flat Angle)",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Mid Chest",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Dumbbell Squeeze Press (Flat Bench)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Isometric Dumbbell Hold Press (Flat)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Band-Resisted Flat Bench Press",
+            "equipment": "Barbell + Resistance Band",
+            "level": "Advanced",
+            "focus": "Mid Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Decline Push-Ups",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Mid Chest",
+            "type": "Bodyweight"
+          },
+          {
+            "name": "Crossbody Cable Press (Flat Alignment)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Mid Chest",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Chest",
+      "region": "Lower Region",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Decline Machine Chest Press",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Decline Push-Ups (Feet Elevated)",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Lower Chest",
+            "type": "Bodyweight"
+          },
+          {
+            "name": "Resistance Band Decline Press",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Decline Barbell Bench Press",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Decline Dumbbell Bench Press",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Cable Crossover (High to Low)",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Lower Chest",
+            "type": "Isolation"
+          },
+          {
+            "name": "Decline Cable Press (Standing or Lying)",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Chest Dips (Lean Forward)",
+            "equipment": "Bodyweight / Dip Bars",
+            "level": "Intermediate",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Decline Pec Deck (if available)",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Lower Chest",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Weighted Chest Dips (Forward Lean)",
+            "equipment": "Bodyweight + Weights",
+            "level": "Advanced",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "High-to-Low Cable Single Arm Fly",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Lower Chest",
+            "type": "Isolation"
+          },
+          {
+            "name": "Decline Dumbbell Squeeze Press",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Landmine Decline Press (Kneeling or Lying)",
+            "equipment": "Barbell (Landmine)",
+            "level": "Advanced",
+            "focus": "Lower Chest",
+            "type": "Compound"
+          },
+          {
+            "name": "Ring Chest Dips",
+            "equipment": "Gymnastic Rings",
+            "level": "Advanced",
+            "focus": "Lower Chest",
+            "type": "Bodyweight"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Chest",
+      "region": "Chest Finisher",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Push-Up to Failure",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Full Chest",
+            "type": "Finisher"
+          },
+          {
+            "name": "Wall Resistance Chest Press",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Chest Pump",
+            "type": "Finisher"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Drop Set Dumbbell Fly (Flat or Incline)",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Chest Burnout",
+            "type": "Finisher"
+          },
+          {
+            "name": "Cable Chest Fly 21s (7 top, 7 bottom, 7 full range)",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Full Chest",
+            "type": "Finisher"
+          },
+          {
+            "name": "Incline Push-Up to Flat to Decline (Triset)",
+            "equipment": "Bodyweight",
+            "level": "Intermediate",
+            "focus": "All Chest Angles",
+            "type": "Finisher"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Giant Set (Flat Press + Incline Fly + Push-Ups)",
+            "equipment": "Dumbbell + Bodyweight",
+            "level": "Advanced",
+            "focus": "Upper/Mid Chest",
+            "type": "Finisher"
+          },
+          {
+            "name": "100 Rep Chest Burnout (Light Dumbbell Press or Fly)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Chest Endurance",
+            "type": "Finisher"
+          },
+          {
+            "name": "Isometric Chest Hold + Push-Up Superset",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Full Chest + Stability",
+            "type": "Finisher"
+          },
+          {
+            "name": "Resistance Band Chest Burnout",
+            "equipment": "Band",
+            "level": "Advanced",
+            "focus": "Chest Pump",
+            "type": "Finisher"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Shoulder",
+      "region": "Anterior Deltoid (Front Shoulder)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Front Dumbbell Raise",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Anterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Front Raise",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Anterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Plate Front Raise",
+            "equipment": "Weight Plate",
+            "level": "Beginner",
+            "focus": "Anterior Deltoid",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Barbell Overhead Press",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Anterior Deltoid",
+            "type": "Compound"
+          },
+          {
+            "name": "Dumbbell Shoulder Press",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Anterior Deltoid",
+            "type": "Compound"
+          },
+          {
+            "name": "Arnold Press",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Anterior Deltoid",
+            "type": "Compound"
+          },
+          {
+            "name": "Machine Shoulder Press",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Anterior Deltoid",
+            "type": "Compound"
+          },
+          {
+            "name": "Smith Machine Overhead Press",
+            "equipment": "Smith Machine",
+            "level": "Intermediate",
+            "focus": "Anterior Deltoid",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Z-Press (Seated Barbell Press on Floor)",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Anterior Deltoid",
+            "type": "Compound"
+          },
+          {
+            "name": "Landmine Press (Single or Double Arm)",
+            "equipment": "Barbell (Landmine)",
+            "level": "Advanced",
+            "focus": "Anterior Deltoid",
+            "type": "Compound"
+          },
+          {
+            "name": "Cable Front Raise",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Anterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Single Arm Dumbbell Front Raise (Controlled Tempo)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Anterior Deltoid",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Shoulder",
+      "region": "Lateral Deltoid (Side Shoulder)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Dumbbell Lateral Raise",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Lateral Raise",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Seated Dumbbell Lateral Raise",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Cable Lateral Raise",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Machine Lateral Raise",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Leaning Cable Lateral Raise",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Plate Lateral Raise",
+            "equipment": "Weight Plate",
+            "level": "Intermediate",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Dumbbell Lateral Raise with Pause Hold",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Behind-The-Back Cable Lateral Raise",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Lateral Raise Drop Set",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "One-Arm Dumbbell Lateral Raise (Strict Form)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Lateral Deltoid",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Shoulder",
+      "region": "Posterior Deltoid (Rear Shoulder)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Rear Delt Dumbbell Fly (Seated or Standing)",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Reverse Fly",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Rear Delt Wall Slide",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Rear Delt Cable Fly (Reverse Crossover)",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Rear Delt Machine Fly (Reverse Pec Deck)",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Bent-Over Rear Delt Raise",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Incline Bench Rear Delt Fly",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Face Pull (Cable with Rope)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Reverse Cable Crossover (Arms Crossed Start)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          },
+          {
+            "name": "Rear Delt Row (Underhand or Neutral Grip)",
+            "equipment": "Barbell or Dumbbell",
+            "level": "Advanced",
+            "focus": "Posterior Deltoid",
+            "type": "Compound"
+          },
+          {
+            "name": "Prone Rear Delt Raise (on Incline Bench)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Posterior Deltoid",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Shoulder",
+      "region": "Full Shoulder Burnout (All Heads)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Plate Around the World",
+            "equipment": "Weight Plate",
+            "level": "Beginner",
+            "focus": "Full Shoulder Burnout",
+            "type": "Isolation"
+          },
+          {
+            "name": "Front to Lateral Raise Combo (Alt Reps)",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Front + Side Delts",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Shoulder Giant Set (Front Raise + Lateral Raise + Rear Fly)",
+            "equipment": "Dumbbells",
+            "level": "Intermediate",
+            "focus": "Full Shoulders",
+            "type": "Isolation"
+          },
+          {
+            "name": "21s for Shoulders (7 Front + 7 Side + 7 Rear Raises)",
+            "equipment": "Dumbbells",
+            "level": "Intermediate",
+            "focus": "Full Shoulder Pump",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Triple Raise Finisher",
+            "equipment": "Resistance Band",
+            "level": "Intermediate",
+            "focus": "All Delts",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Dumbbell Ladder Raises (5–25 lb Raise Pyramid)",
+            "equipment": "Dumbbells",
+            "level": "Advanced",
+            "focus": "Full Shoulder Burnout",
+            "type": "Isolation"
+          },
+          {
+            "name": "3D Shoulder Blast (Superset: Arnold Press + Lateral Raise + Reverse Fly)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Anterior + Lateral + Rear",
+            "type": "Isolation + Compound"
+          },
+          {
+            "name": "Mechanical Drop Set (Standing → Seated → Partial Lateral Raises)",
+            "equipment": "Dumbbells",
+            "level": "Advanced",
+            "focus": "Lateral Delts Burnout",
+            "type": "Isolation"
+          },
+          {
+            "name": "TRX Shoulder Finisher (Front Hold + Lateral Fly + Rear T Raises)",
+            "equipment": "TRX",
+            "level": "Advanced",
+            "focus": "Functional Shoulder Burn",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Back",
+      "region": "Upper Back (Traps, Rhomboids, Rear Delts Upper Fibers)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Barbell Shrug",
+            "equipment": "Barbell",
+            "level": "Beginner",
+            "focus": "Upper Traps",
+            "type": "Isolation"
+          },
+          {
+            "name": "Dumbbell Shrug",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Upper Traps",
+            "type": "Isolation"
+          },
+          {
+            "name": "Seated Machine Shrug",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Upper Traps",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Upright Row (Wide Grip)",
+            "equipment": "Barbell or EZ Bar",
+            "level": "Intermediate",
+            "focus": "Traps + Upper Back",
+            "type": "Compound"
+          },
+          {
+            "name": "Face Pull",
+            "equipment": "Cable (Rope)",
+            "level": "Intermediate",
+            "focus": "Rear Delts + Upper Back",
+            "type": "Isolation"
+          },
+          {
+            "name": "Smith Machine Shrug",
+            "equipment": "Smith Machine",
+            "level": "Intermediate",
+            "focus": "Traps",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Behind-the-Back Barbell Shrug",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Traps",
+            "type": "Isolation"
+          },
+          {
+            "name": "Dumbbell Incline Shrug",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Traps",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Trap Raise",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Traps + Rear Delts",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Back",
+      "region": "Middle Back (Rhomboids, Mid-Traps)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Seated Cable Row",
+            "equipment": "Cable",
+            "level": "Beginner",
+            "focus": "Middle Back",
+            "type": "Compound"
+          },
+          {
+            "name": "Chest Supported Row (Machine)",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Middle Back",
+            "type": "Compound"
+          },
+          {
+            "name": "Resistance Band Row",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Middle Back",
+            "type": "Compound"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Barbell Bent-Over Row",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Middle Back",
+            "type": "Compound"
+          },
+          {
+            "name": "T-Bar Row",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Middle Back",
+            "type": "Compound"
+          },
+          {
+            "name": "Incline Chest-Supported Dumbbell Row",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Middle Back",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Meadow Rows",
+            "equipment": "Landmine (Barbell)",
+            "level": "Advanced",
+            "focus": "Middle Back",
+            "type": "Compound"
+          },
+          {
+            "name": "Iso-Lateral Row (Unilateral Machine Row)",
+            "equipment": "Machine",
+            "level": "Advanced",
+            "focus": "Middle Back",
+            "type": "Compound"
+          },
+          {
+            "name": "Kroc Rows (Heavy DB Rows)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Middle Back",
+            "type": "Compound"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Back",
+      "region": "Lats (Outer Width)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Lat Pulldown",
+            "equipment": "Cable Machine",
+            "level": "Beginner",
+            "focus": "Lats",
+            "type": "Compound"
+          },
+          {
+            "name": "Resistance Band Lat Pulldown",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Lats",
+            "type": "Compound"
+          },
+          {
+            "name": "Assisted Pull-Ups",
+            "equipment": "Machine or Band",
+            "level": "Beginner",
+            "focus": "Lats",
+            "type": "Compound"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Pull-Ups (Bodyweight)",
+            "equipment": "Bodyweight",
+            "level": "Intermediate",
+            "focus": "Lats",
+            "type": "Compound"
+          },
+          {
+            "name": "Chin-Ups",
+            "equipment": "Bodyweight",
+            "level": "Intermediate",
+            "focus": "Lats + Biceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Straight-Arm Cable Pulldown",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Lats",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Weighted Pull-Ups",
+            "equipment": "Bodyweight + Weight Plate",
+            "level": "Advanced",
+            "focus": "Lats",
+            "type": "Compound"
+          },
+          {
+            "name": "One-Arm Lat Pulldown",
+            "equipment": "Cable or Machine",
+            "level": "Advanced",
+            "focus": "Lats",
+            "type": "Compound"
+          },
+          {
+            "name": "Kayak Rows (Cable Arc Pulls)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Lats",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Back",
+      "region": "Lower Back (Spinal Erectors)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Back Extension (Bodyweight)",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Lower Back",
+            "type": "Isolation"
+          },
+          {
+            "name": "Superman Hold",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Lower Back",
+            "type": "Isolation"
+          },
+          {
+            "name": "Bird-Dog",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Core + Lower Back",
+            "type": "Stability"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Hyperextensions (Machine)",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Lower Back",
+            "type": "Isolation"
+          },
+          {
+            "name": "Good Mornings",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Lower Back + Hamstrings",
+            "type": "Compound"
+          },
+          {
+            "name": "Cable Pull-Throughs",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Glutes + Lower Back",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Barbell Romanian Deadlift",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Hamstrings + Lower Back",
+            "type": "Compound"
+          },
+          {
+            "name": "Deficit Deadlift",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Lower Back + Glutes",
+            "type": "Compound"
+          },
+          {
+            "name": "Snatch-Grip Deadlift",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Lower Back + Traps",
+            "type": "Compound"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Biceps",
+      "region": "Long Head (Outer Biceps Peak)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Alternating Dumbbell Curl (Arms Slightly Behind Torso)",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Curls (Arms Outward Angle)",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Standing Barbell Curl (Close Grip)",
+            "equipment": "Barbell",
+            "level": "Beginner",
+            "focus": "Long Head",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Incline Dumbbell Curl (Arms Hang Back)",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Concentration Curl (Angled Elbow)",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Rope Hammer Curl (Outward Angle)",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Long Head + Brachialis",
+            "type": "Isolation"
+          },
+          {
+            "name": "Preacher Curl (EZ Bar or Dumbbell, Close Grip)",
+            "equipment": "Machine / EZ Bar / Dumbbell",
+            "level": "Intermediate",
+            "focus": "Long Head",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Bayesian Curl (Cable Behind You)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Drag Curl (Barbell or Cable)",
+            "equipment": "Barbell / Cable",
+            "level": "Advanced",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Crossbody Cable Curl",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Long Head + Peak",
+            "type": "Isolation"
+          },
+          {
+            "name": "Zottman Curl (Peak + Forearm Burn)",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Long Head + Forearms",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Biceps",
+      "region": "Short Head (Inner Biceps Thickness)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "EZ Bar Curl (Wide Grip)",
+            "equipment": "EZ Bar",
+            "level": "Beginner",
+            "focus": "Short Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Curls (Arms Tucked In)",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Short Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Curl (Wide Grip)",
+            "equipment": "Cable",
+            "level": "Beginner",
+            "focus": "Short Head",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Spider Curl (Dumbbell or Barbell)",
+            "equipment": "Dumbbell / Barbell",
+            "level": "Intermediate",
+            "focus": "Short Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Preacher Curl (Wide Grip)",
+            "equipment": "Machine / EZ Bar",
+            "level": "Intermediate",
+            "focus": "Short Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Preacher Curl (Wide Grip)",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Short Head",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "21s Curl (Partial + Full ROM)",
+            "equipment": "Barbell / Dumbbell",
+            "level": "Advanced",
+            "focus": "Short Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "One-Arm Cable Curls (Across the Chest)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Short Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Double Cable Curl (Arms Open Outward)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Short Head",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Biceps",
+      "region": "Brachialis (Side Biceps Width)",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Hammer Curl (Neutral Grip)",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Brachialis",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Hammer Curl",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Brachialis",
+            "type": "Isolation"
+          },
+          {
+            "name": "EZ Bar Reverse Curl",
+            "equipment": "EZ Bar",
+            "level": "Beginner",
+            "focus": "Brachialis + Forearms",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Crossbody Hammer Curl",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Brachialis",
+            "type": "Isolation"
+          },
+          {
+            "name": "Reverse Grip Cable Curl",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Brachialis + Forearms",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Zottman Curl",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Brachialis + Forearms",
+            "type": "Isolation"
+          },
+          {
+            "name": "Hammer Preacher Curl",
+            "equipment": "Dumbbell / Machine",
+            "level": "Advanced",
+            "focus": "Brachialis",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Biceps",
+      "region": "Overall Biceps Mass",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Barbell Curl",
+            "equipment": "Barbell",
+            "level": "Beginner",
+            "focus": "Overall",
+            "type": "Compound"
+          },
+          {
+            "name": "Dumbbell Curl (Alternating)",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Overall",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Curl (Straight Bar)",
+            "equipment": "Cable",
+            "level": "Beginner",
+            "focus": "Overall",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Incline Dumbbell Curl",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Overall + Peak",
+            "type": "Isolation"
+          },
+          {
+            "name": "EZ Bar Curl",
+            "equipment": "EZ Bar",
+            "level": "Intermediate",
+            "focus": "Overall",
+            "type": "Compound"
+          },
+          {
+            "name": "Preacher Curl",
+            "equipment": "EZ Bar / Dumbbell / Machine",
+            "level": "Intermediate",
+            "focus": "Overall",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Cheat Curl (Heavy Barbell)",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Overall Mass",
+            "type": "Compound"
+          },
+          {
+            "name": "Bayesian Curl",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Overall + Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Incline Zottman Curl",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Overall + Forearms",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Triceps",
+      "region": "Long Head",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Overhead Dumbbell Triceps Extension (Seated or Standing)",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Overhead Extension",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Two-Handed Cable Overhead Triceps Extension",
+            "equipment": "Cable",
+            "level": "Beginner",
+            "focus": "Long Head",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "EZ Bar Overhead Triceps Extension",
+            "equipment": "EZ Bar",
+            "level": "Intermediate",
+            "focus": "Long Head",
+            "type": "Compound/Isolation"
+          },
+          {
+            "name": "Rope Overhead Cable Extension",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Dumbbell Skull Crushers",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Incline EZ Bar Skullcrusher",
+            "equipment": "EZ Bar",
+            "level": "Intermediate",
+            "focus": "Long Head",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Overhead Cable Cross Extensions",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Barbell Behind-the-Neck Triceps Press",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "One-Arm Overhead Dumbbell Extension",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Incline Cable Overhead Skullcrusher",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Long Head",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Triceps",
+      "region": "Lateral Head",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Cable Triceps Pushdown (Straight Bar)",
+            "equipment": "Cable",
+            "level": "Beginner",
+            "focus": "Lateral Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Dumbbell Triceps Kickbacks",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Lateral Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Pushdowns",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Lateral Head",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Rope Triceps Pushdown",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Lateral Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Close-Grip Barbell Bench Press",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Lateral + Long Head",
+            "type": "Compound"
+          },
+          {
+            "name": "Dumbbell Floor Press",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Lateral Head",
+            "type": "Compound"
+          },
+          {
+            "name": "Machine Triceps Press",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Lateral Head",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Reverse Grip Triceps Pushdowns",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Lateral Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "V-Bar Cable Pushdown",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Lateral Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Kickbacks with Cable (Strict Form)",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Lateral Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Decline Close-Grip Bench Press",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Lateral + Long Head",
+            "type": "Compound"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Triceps",
+      "region": "Medial Head",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Reverse Grip Dumbbell Kickbacks",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Medial Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Reverse Grip Pushdowns",
+            "equipment": "Cable",
+            "level": "Beginner",
+            "focus": "Medial Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Close-Grip Push-Ups",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Medial + Long Head",
+            "type": "Compound"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "EZ Bar Reverse Grip Pushdowns",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Medial Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Machine Dips (Neutral Grip)",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Medial + Lateral Head",
+            "type": "Compound"
+          },
+          {
+            "name": "Diamond Push-Ups",
+            "equipment": "Bodyweight",
+            "level": "Intermediate",
+            "focus": "Medial + Long Head",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "One-Arm Reverse Cable Pushdowns",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Medial Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Triceps Lockout Press",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Medial Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Underhand Rope Pushdowns",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Medial Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Barbell Floor Press (Triceps-Focused)",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Medial Head",
+            "type": "Compound"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Triceps",
+      "region": "Finishers",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Triceps Pushdown Dropset (Cable)",
+            "equipment": "Cable",
+            "level": "Beginner",
+            "focus": "All Heads",
+            "type": "Isolation"
+          },
+          {
+            "name": "Resistance Band Overhead Extensions – AMRAP",
+            "equipment": "Resistance Band",
+            "level": "Beginner",
+            "focus": "Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Bodyweight Close-Grip Push-Ups to Failure",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Medial + Long Head",
+            "type": "Compound"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Rope Pushdowns + Overhead Extensions Superset",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Lateral + Long Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Dumbbell Kickbacks – 21s Method",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Lateral + Medial Head",
+            "type": "Isolation"
+          },
+          {
+            "name": "Close-Grip Bench Press – Rest-Pause Set",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Long + Medial Head",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Triple Dropset: Rope → Straight Bar → Reverse Grip Pushdowns",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "All Heads",
+            "type": "Isolation"
+          },
+          {
+            "name": "100-Rep Burnout: Resistance Band Pushdowns",
+            "equipment": "Resistance Band",
+            "level": "Advanced",
+            "focus": "All Heads",
+            "type": "Isolation"
+          },
+          {
+            "name": "Dips to Mechanical Failure (Weighted → Bodyweight → Band-Assisted)",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Lateral + Long Head",
+            "type": "Compound"
+          },
+          {
+            "name": "Skullcrushers → Close-Grip Bench Press Superset",
+            "equipment": "EZ Bar",
+            "level": "Advanced",
+            "focus": "Long + Medial Head",
+            "type": "Compound + Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Legs",
+      "region": "Quadriceps",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Bodyweight Squats",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Quadriceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Leg Press Machine (Narrow Stance)",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Quadriceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Dumbbell Goblet Squats",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Quadriceps",
+            "type": "Compound"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Barbell Back Squats",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Quadriceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Bulgarian Split Squats",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Quadriceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Leg Extensions",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Quadriceps",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Front Squats",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Quadriceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Hack Squats",
+            "equipment": "Machine",
+            "level": "Advanced",
+            "focus": "Quadriceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Sissy Squats",
+            "equipment": "Bodyweight/Machine",
+            "level": "Advanced",
+            "focus": "Quadriceps",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Legs",
+      "region": "Hamstrings",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Glute Bridge",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Hamstrings",
+            "type": "Compound"
+          },
+          {
+            "name": "Seated Leg Curl",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Hamstrings",
+            "type": "Isolation"
+          },
+          {
+            "name": "Standing Dumbbell Leg Curl",
+            "equipment": "Dumbbell",
+            "level": "Beginner",
+            "focus": "Hamstrings",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Romanian Deadlift (RDL)",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Hamstrings",
+            "type": "Compound"
+          },
+          {
+            "name": "Lying Leg Curl",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Hamstrings",
+            "type": "Isolation"
+          },
+          {
+            "name": "Good Mornings",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Hamstrings",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Nordic Hamstring Curl",
+            "equipment": "Bodyweight/Assisted",
+            "level": "Advanced",
+            "focus": "Hamstrings",
+            "type": "Isolation"
+          },
+          {
+            "name": "Deficit Romanian Deadlifts",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Hamstrings",
+            "type": "Compound"
+          },
+          {
+            "name": "Single-Leg Glute Ham Raise",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Hamstrings",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Legs",
+      "region": "Glutes",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Bodyweight Hip Thrusts",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Glutes",
+            "type": "Compound"
+          },
+          {
+            "name": "Glute Kickbacks",
+            "equipment": "Cable/Band",
+            "level": "Beginner",
+            "focus": "Glutes",
+            "type": "Isolation"
+          },
+          {
+            "name": "Donkey Kicks",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Glutes",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Barbell Hip Thrusts",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Glutes",
+            "type": "Compound"
+          },
+          {
+            "name": "Kettlebell Swings",
+            "equipment": "Kettlebell",
+            "level": "Intermediate",
+            "focus": "Glutes",
+            "type": "Compound"
+          },
+          {
+            "name": "Cable Glute Kickbacks",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Glutes",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Single-Leg Barbell Hip Thrust",
+            "equipment": "Barbell",
+            "level": "Advanced",
+            "focus": "Glutes",
+            "type": "Compound"
+          },
+          {
+            "name": "Banded Sumo Deadlifts",
+            "equipment": "Barbell/Band",
+            "level": "Advanced",
+            "focus": "Glutes",
+            "type": "Compound"
+          },
+          {
+            "name": "Cable Glute Rainbow Kicks",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Glutes",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Legs",
+      "region": "Adductors",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Seated Adduction Machine",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Adductors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Side-Lying Hip Adduction",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Adductors",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Cable Hip Adduction",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Adductors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Sumo Squats",
+            "equipment": "Barbell/Dumbbell",
+            "level": "Intermediate",
+            "focus": "Adductors",
+            "type": "Compound"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Copenhagen Plank with Pulse",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Adductors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Lateral Lunge to Adduction",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Adductors",
+            "type": "Compound"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Legs",
+      "region": "Abductors",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Seated Abduction Machine",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Abductors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Side-Lying Leg Raise",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Abductors",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Standing Cable Hip Abduction",
+            "equipment": "Cable",
+            "level": "Intermediate",
+            "focus": "Abductors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Banded Side Steps",
+            "equipment": "Resistance Band",
+            "level": "Intermediate",
+            "focus": "Abductors",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Curtsy Lunge with Abduction",
+            "equipment": "Dumbbell/Band",
+            "level": "Advanced",
+            "focus": "Abductors",
+            "type": "Compound"
+          },
+          {
+            "name": "Cable Crossover Lateral Raises",
+            "equipment": "Cable",
+            "level": "Advanced",
+            "focus": "Abductors",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Legs",
+      "region": "Calves",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Bodyweight Standing Calf Raise",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Calves",
+            "type": "Isolation"
+          },
+          {
+            "name": "Seated Calf Raise Machine",
+            "equipment": "Machine",
+            "level": "Beginner",
+            "focus": "Calves",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Standing Calf Raises with Dumbbells",
+            "equipment": "Dumbbell",
+            "level": "Intermediate",
+            "focus": "Calves",
+            "type": "Isolation"
+          },
+          {
+            "name": "Smith Machine Calf Raises",
+            "equipment": "Machine",
+            "level": "Intermediate",
+            "focus": "Calves",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Donkey Calf Raises",
+            "equipment": "Bodyweight/Machine",
+            "level": "Advanced",
+            "focus": "Calves",
+            "type": "Isolation"
+          },
+          {
+            "name": "Single-Leg Calf Raise with Weight",
+            "equipment": "Dumbbell",
+            "level": "Advanced",
+            "focus": "Calves",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Core",
+      "region": "Upper Abs",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Crunches",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Upper Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Standing Cable Crunch",
+            "equipment": "Cable Machine",
+            "level": "Beginner",
+            "focus": "Upper Abs",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Decline Bench Crunch",
+            "equipment": "Decline Bench",
+            "level": "Intermediate",
+            "focus": "Upper Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Stability Ball Crunch",
+            "equipment": "Stability Ball",
+            "level": "Intermediate",
+            "focus": "Upper Abs",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Weighted Decline Crunch",
+            "equipment": "Decline Bench + Plate/Dumbbell",
+            "level": "Advanced",
+            "focus": "Upper Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Rope Crunch (Kneeling)",
+            "equipment": "Cable Machine",
+            "level": "Advanced",
+            "focus": "Upper Abs",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Core",
+      "region": "Lower Abs",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Lying Leg Raises",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Reverse Crunches",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Hanging Knee Raises",
+            "equipment": "Pull-Up Bar",
+            "level": "Intermediate",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Seated Leg Tucks",
+            "equipment": "Bench / Bodyweight",
+            "level": "Intermediate",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Hanging Leg Raises",
+            "equipment": "Pull-Up Bar",
+            "level": "Advanced",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Toes to Bar",
+            "equipment": "Pull-Up Bar",
+            "level": "Advanced",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Weighted Leg Raises",
+            "equipment": "Ankle Weights / Dumbbell",
+            "level": "Advanced",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Core",
+      "region": "Obliques",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Side Plank",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Obliques",
+            "type": "Isometric"
+          },
+          {
+            "name": "Seated Russian Twists (Bodyweight)",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Obliques",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Standing Oblique Crunch",
+            "equipment": "Bodyweight or Dumbbell",
+            "level": "Intermediate",
+            "focus": "Obliques",
+            "type": "Isolation"
+          },
+          {
+            "name": "Russian Twists with Medicine Ball / Plate",
+            "equipment": "Plate / Ball",
+            "level": "Intermediate",
+            "focus": "Obliques",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Woodchoppers (High to Low)",
+            "equipment": "Cable Machine",
+            "level": "Intermediate",
+            "focus": "Obliques",
+            "type": "Isolation / Functional"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Landmine Twists",
+            "equipment": "Barbell (Landmine Setup)",
+            "level": "Advanced",
+            "focus": "Obliques",
+            "type": "Compound / Functional"
+          },
+          {
+            "name": "Hanging Oblique Knee Raises (Twisting)",
+            "equipment": "Pull-Up Bar",
+            "level": "Advanced",
+            "focus": "Obliques",
+            "type": "Isolation"
+          },
+          {
+            "name": "Cable Woodchoppers (Low to High)",
+            "equipment": "Cable Machine",
+            "level": "Advanced",
+            "focus": "Obliques",
+            "type": "Functional"
+          },
+          {
+            "name": "Weighted Side Bends",
+            "equipment": "Dumbbell / Kettlebell",
+            "level": "Advanced",
+            "focus": "Obliques",
+            "type": "Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Core",
+      "region": "Transverse Abdominis",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Plank (Standard)",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Transverse Abdominis",
+            "type": "Isometric"
+          },
+          {
+            "name": "Dead Bug",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Transverse Abdominis",
+            "type": "Isolation / Stability"
+          },
+          {
+            "name": "Bird-Dog",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Transverse Abdominis",
+            "type": "Stability"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Stability Ball Plank",
+            "equipment": "Stability Ball",
+            "level": "Intermediate",
+            "focus": "Transverse Abdominis",
+            "type": "Isometric / Stability"
+          },
+          {
+            "name": "Stability Ball Dead Bug",
+            "equipment": "Stability Ball",
+            "level": "Intermediate",
+            "focus": "Transverse Abdominis",
+            "type": "Isolation"
+          },
+          {
+            "name": "Plank with Reach",
+            "equipment": "Bodyweight",
+            "level": "Intermediate",
+            "focus": "Transverse Abdominis",
+            "type": "Stability"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Plank to Push-Up",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Transverse Abdominis",
+            "type": "Stability"
+          },
+          {
+            "name": "Weighted Plank",
+            "equipment": "Plate or Weighted Vest",
+            "level": "Advanced",
+            "focus": "Transverse Abdominis",
+            "type": "Isometric"
+          },
+          {
+            "name": "TRX Body Saw",
+            "equipment": "TRX Straps",
+            "level": "Advanced",
+            "focus": "Transverse Abdominis",
+            "type": "Stability"
+          },
+          {
+            "name": "Plank with Shoulder Tap",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Transverse Abdominis",
+            "type": "Stability"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Core",
+      "region": "Finishers",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Plank Hold to Failure",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Full Core",
+            "type": "Isometric"
+          },
+          {
+            "name": "30s On/Off Crunch Burnout",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Upper & Lower Abs",
+            "type": "Isolation"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Weighted Russian Twist Burnout",
+            "equipment": "Plate / Dumbbell",
+            "level": "Intermediate",
+            "focus": "Obliques & Upper Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Leg Raise Dropset (Weighted → Bodyweight → Partial)",
+            "equipment": "Dumbbell / Bodyweight",
+            "level": "Intermediate",
+            "focus": "Lower Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Plank Marches (to Failure)",
+            "equipment": "Bodyweight",
+            "level": "Intermediate",
+            "focus": "Transverse Abdominis",
+            "type": "Stability"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "4-Way Core Finisher",
+            "equipment": "Bodyweight + Pull-up Bar",
+            "level": "Advanced",
+            "focus": "Complete Core Burn",
+            "type": "Mixed"
+          },
+          {
+            "name": "Weighted Plank to Failure",
+            "equipment": "Plate",
+            "level": "Advanced",
+            "focus": "Transverse Abdominis",
+            "type": "Isometric"
+          },
+          {
+            "name": "Cable Crunch Dropset",
+            "equipment": "Cable Machine",
+            "level": "Advanced",
+            "focus": "Upper Abs",
+            "type": "Isolation"
+          },
+          {
+            "name": "Decline Sit-Up to Medicine Ball Slam",
+            "equipment": "Decline Bench + Medicine Ball",
+            "level": "Advanced",
+            "focus": "Explosive Core",
+            "type": "Power / Isolation"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Forearms",
+      "region": "Forearms",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Wrist Curls (Seated)",
+            "equipment": "Dumbbell / Barbell",
+            "level": "Beginner",
+            "focus": "Wrist Flexors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Reverse Wrist Curls (Seated)",
+            "equipment": "Dumbbell / Barbell",
+            "level": "Beginner",
+            "focus": "Wrist Extensors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Wrist Rotations (Supination & Pronation)",
+            "equipment": "Light Dumbbell / Stick",
+            "level": "Beginner",
+            "focus": "Rotators & Extensors",
+            "type": "Mobility / Isolation"
+          },
+          {
+            "name": "Farmer's Walk (Light)",
+            "equipment": "Dumbbells",
+            "level": "Beginner",
+            "focus": "Grip Strength",
+            "type": "Isometric"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Behind-the-Back Barbell Wrist Curls",
+            "equipment": "Barbell",
+            "level": "Intermediate",
+            "focus": "Wrist Flexors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Zottman Curls",
+            "equipment": "Dumbbells",
+            "level": "Intermediate",
+            "focus": "Forearms + Biceps",
+            "type": "Compound / Isolation"
+          },
+          {
+            "name": "Hammer Curls",
+            "equipment": "Dumbbells",
+            "level": "Intermediate",
+            "focus": "Brachioradialis",
+            "type": "Compound"
+          },
+          {
+            "name": "Reverse Curls",
+            "equipment": "EZ Bar / Barbell",
+            "level": "Intermediate",
+            "focus": "Wrist Extensors + Biceps",
+            "type": "Compound"
+          },
+          {
+            "name": "Thick Bar or Fat Grip Training",
+            "equipment": "Thick Bar / Fat Gripz",
+            "level": "Intermediate",
+            "focus": "Grip Strength",
+            "type": "Functional"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "Towel or Rope Pull-Ups",
+            "equipment": "Towel / Rope + Pull-Up Bar",
+            "level": "Advanced",
+            "focus": "Grip + Forearms",
+            "type": "Compound"
+          },
+          {
+            "name": "Wrist Roller (Up and Down)",
+            "equipment": "Wrist Roller + Weight Plate",
+            "level": "Advanced",
+            "focus": "Wrist Flexors / Extensors",
+            "type": "Isolation"
+          },
+          {
+            "name": "Plate Pinch Hold",
+            "equipment": "Weight Plates",
+            "level": "Advanced",
+            "focus": "Grip Strength",
+            "type": "Isometric"
+          },
+          {
+            "name": "Farmer’s Carry (Heavy)",
+            "equipment": "Heavy Dumbbells / Trap Bar",
+            "level": "Advanced",
+            "focus": "Grip Strength + Endurance",
+            "type": "Isometric"
+          },
+          {
+            "name": "Dead Hangs to Failure",
+            "equipment": "Pull-Up Bar",
+            "level": "Advanced",
+            "focus": "Grip Endurance",
+            "type": "Isometric"
+          }
+        ]
+      }
+    },
+    {
+      "workout": "Cardio",
+      "region": "Cardiovascular / Full Body",
+      "styles": {
+        "Beginner": [
+          {
+            "name": "Brisk Walking",
+            "equipment": "None / Treadmill",
+            "level": "Beginner",
+            "focus": "Steady-State Cardio",
+            "type": "Low-Impact"
+          },
+          {
+            "name": "Stationary Bike (Low Resistance)",
+            "equipment": "Stationary Bike",
+            "level": "Beginner",
+            "focus": "Endurance / Fat Burn",
+            "type": "Low-Impact"
+          },
+          {
+            "name": "Marching in Place",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Light Movement",
+            "type": "Low-Impact"
+          },
+          {
+            "name": "Step Touch",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Warm-Up / Light Cardio",
+            "type": "Dynamic"
+          },
+          {
+            "name": "Low-Impact Aerobics",
+            "equipment": "Bodyweight",
+            "level": "Beginner",
+            "focus": "Heart Rate Elevation",
+            "type": "Steady-State"
+          }
+        ],
+        "Intermediate": [
+          {
+            "name": "Jogging (Outdoor / Treadmill)",
+            "equipment": "None / Treadmill",
+            "level": "Intermediate",
+            "focus": "Steady-State Cardio",
+            "type": "Endurance"
+          },
+          {
+            "name": "Jump Rope (Basic)",
+            "equipment": "Jump Rope",
+            "level": "Intermediate",
+            "focus": "Coordination + Cardio",
+            "type": "Plyometric"
+          },
+          {
+            "name": "Elliptical Trainer (Moderate Intensity)",
+            "equipment": "Elliptical",
+            "level": "Intermediate",
+            "focus": "Steady-State Cardio",
+            "type": "Low-Impact"
+          },
+          {
+            "name": "Jumping Jacks",
+            "equipment": "Bodyweight",
+            "level": "Intermediate",
+            "focus": "Full Body Cardio",
+            "type": "Dynamic"
+          },
+          {
+            "name": "Cycling (Outdoor / Stationary)",
+            "equipment": "Bicycle / Stationary Bike",
+            "level": "Intermediate",
+            "focus": "Lower Body + Cardio",
+            "type": "Endurance"
+          }
+        ],
+        "Advanced": [
+          {
+            "name": "High Intensity Interval Training (HIIT)",
+            "equipment": "Bodyweight / Dumbbells / Equipment",
+            "level": "Advanced",
+            "focus": "Fat Burn + Endurance",
+            "type": "Interval"
+          },
+          {
+            "name": "Sprint Intervals (Treadmill or Outdoor)",
+            "equipment": "None / Treadmill",
+            "level": "Advanced",
+            "focus": "Explosive Power + Fat Burn",
+            "type": "Plyometric / HIIT"
+          },
+          {
+            "name": "Burpees",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Full Body Burn",
+            "type": "Plyometric"
+          },
+          {
+            "name": "Mountain Climbers (Fast Tempo)",
+            "equipment": "Bodyweight",
+            "level": "Advanced",
+            "focus": "Core + Cardio",
+            "type": "Plyometric"
+          },
+          {
+            "name": "Rowing Machine (Intervals)",
+            "equipment": "Rowing Machine",
+            "level": "Advanced",
+            "focus": "Full Body + HIIT",
+            "type": "Interval"
+          },
+          {
+            "name": "Jump Rope (Double Unders / Fast)",
+            "equipment": "Jump Rope",
+            "level": "Advanced",
+            "focus": "Explosive Conditioning",
+            "type": "Plyometric"
+          }
+        ]
+      }
+    }
+  ]
+  
