@@ -7,7 +7,6 @@ import {
   getSleepLogs,
 } from "../data/getLog";
 import { format, parseISO } from "date-fns";
-import Back from "./back";
 import BottomNavBar from "./BottomNavBar";
 
 export type ExerciseLog = {
@@ -100,7 +99,6 @@ const ProgressScreen = () => {
   return (
     <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
-      <Back />
       <View style={{ alignItems: "center" }}>
       <Text style={styles.header}>Progress Summary</Text>
       </View>

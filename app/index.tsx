@@ -31,8 +31,7 @@ const Index: React.FC = () => {
     fetchBudget();
   }, []);
 
-  const colors = isDarkMode
-    ? {
+  const colors = {
         bg: "#121212",
         text: "#ffffff",
         subText: "#bbbbbb",
@@ -41,16 +40,6 @@ const Index: React.FC = () => {
         card: "#333",
         activeNav: "#bb86fc",
         navIcon: "#888888",
-      }
-    : {
-        bg: "#ffffff",
-        text: "#000000",
-        subText: "#555555",
-        border: "#dddddd",
-        highlight: "#6200ee",
-        card: "#f2f2f2",
-        activeNav: "#6200ee",
-        navIcon: "#888",
       };
 
   const today = dayjs();
