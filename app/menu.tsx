@@ -16,7 +16,7 @@ type MenuItemPath =
   | '/nutrition'
   | '/hydration'
   | '/sleep'
-  | '/progress'
+  | '/stepcount'
   | '/week'
   | '/settings';
 
@@ -30,7 +30,7 @@ const menuItems: MenuItem[] = [
   { label: 'My Nutrition', path: '/nutrition' },
   { label: 'Water & Hydration', path: '/hydration' },
   { label: 'Sleep Tracker', path: '/sleep' },
-  { label: 'My Progress', path: '/progress' },
+  { label: 'My Steps', path: '/stepcount' },
   { label: 'Weekly Check-in', path: '/week' },
   { label: 'Settings', path: '/settings' },
 ];
@@ -40,7 +40,7 @@ const menuIcons: Record<MenuItemPath, keyof typeof Ionicons.glyphMap> = {
   '/nutrition': 'nutrition',
   '/hydration': 'water',
   '/sleep': 'bed',
-  '/progress': 'stats-chart',
+  '/stepcount': 'stats-chart',
   '/week': 'calendar',
   '/settings': 'settings',
 };

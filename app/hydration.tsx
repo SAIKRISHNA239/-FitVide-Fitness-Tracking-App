@@ -185,6 +185,7 @@ const darkStyles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     color: '#bb86fc',
+    marginTop: 40,
   },
   label: {
     fontSize: 16,
