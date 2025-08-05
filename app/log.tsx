@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { db } from "../app/firebase"; // your firebase config file
+import { db } from "../firebase"; // your firebase config file
 import { collection, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext"; // to get current user
 import { AntDesign, Feather } from "@expo/vector-icons";

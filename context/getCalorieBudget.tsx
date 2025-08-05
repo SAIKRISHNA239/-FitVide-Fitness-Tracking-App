@@ -1,21 +1,25 @@
-// utils/getCalorieBudget.ts
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// context/getCalorieBudget.tsx
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 export const getCalorieBudget = async (): Promise<number> => {
+  const user = auth.currentUser;
+  if (!user) return 3200; // Default if not logged in
+
   try {
-    const custom = await AsyncStorage.getItem("customMacroTargets");
-    const fallback = await AsyncStorage.getItem("macroTargets");
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
 
-    const customParsed = custom ? JSON.parse(custom) : null;
-    const fallbackParsed = fallback ? JSON.parse(fallback) : null;
-
-    if (customParsed && customParsed.calories && customParsed.calories > 0) {
-      return customParsed.calories;
-    } else if (fallbackParsed && fallbackParsed.calories) {
-      return fallbackParsed.calories;
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      if (data.customMacroTargets && data.customMacroTargets.calories > 0) {
+        return data.customMacroTargets.calories;
+      }
+      if (data.macroTargets && data.macroTargets.calories > 0) {
+        return data.macroTargets.calories;
+      }
     }
-
-    return 3200; // default fallback
+    return 3200; // Default fallback
   } catch (err) {
     console.error("Error fetching calorie budget:", err);
     return 3200;

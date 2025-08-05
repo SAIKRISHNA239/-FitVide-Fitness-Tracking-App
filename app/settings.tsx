@@ -16,11 +16,13 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import jsPDF from 'jspdf';
-import { auth, db, storage } from './firebase';
+import { auth, db, storage } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 export default function SettingsScreen() {
+  const { logout } = useAuth(); // Get logout function from context
   const { isDarkMode, toggleTheme } = useTheme();
   const router = useRouter();
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -133,7 +135,10 @@ export default function SettingsScreen() {
                     {
                       text: "Logout",
                       style: "destructive",
-                      onPress: () => router.replace("/"),
+                      onPress: () => {
+                        logout(); // Call the logout function
+                        router.replace("/"); // This will trigger the auth check in _layout.tsx
+                      },
                     },
                   ]);
                   break;

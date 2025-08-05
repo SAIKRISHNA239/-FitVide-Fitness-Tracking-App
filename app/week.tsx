@@ -12,6 +12,9 @@ import { darkStyles } from '../context/styles';
 import Back from './back';
 import { startOfWeek, formatISO } from 'date-fns';
 
+import { db } from '../firebase'; // Correct import
+import { collection, doc, getDocs, setDoc, deleteDoc, writeBatch } from 'firebase/firestore'; // Correct import
+
 export default function WeeklyCheckIn() {
     
   const { isDarkMode } = useTheme();
@@ -43,26 +46,25 @@ export default function WeeklyCheckIn() {
 // ⬇ Save to Firestore when history updates
 useEffect(() => {
   const saveHistory = async () => {
-    try {
-      const batch = firestore().batch();
+        try {
+            const batch = writeBatch(db); // Use writeBatch from the correct package
 
-      history.forEach((entry) => {
-        const docRef = firestore().collection('checkins').doc(entry.date);
-        batch.set(docRef, {
-          measurements: entry.measurements,
-          mood: entry.mood,
-          energy: entry.energy,
-          notes: entry.notes || '',
-        });
-      });
+            history.forEach((entry) => {
+                const docRef = doc(db, 'checkins', entry.date); // Use doc from the correct package
+                batch.set(docRef, {
+                    measurements: entry.measurements,
+                    mood: entry.mood,
+                    energy: entry.energy,
+                    notes: entry.notes || '',
+                });
+            });
 
-      await batch.commit();
-      console.log('✅ History saved to Firestore');
-    } catch (error) {
-      console.error('❌ Error saving history to Firestore:', error);
-    }
-  };
-
+            await batch.commit();
+            console.log('✅ History saved to Firestore');
+        } catch (error) {
+            console.error('❌ Error saving history to Firestore:', error);
+        }
+    };
   if (history.length > 0) {
     saveHistory();
   }
@@ -75,13 +77,13 @@ useEffect(() => {
   };
   
   const loadHistory = async () => {
-  try {
-    const snapshot = await firestore().collection('checkins').get();
+        try {
+            const snapshot = await getDocs(collection(db, 'checkins')); // Use getDocs and collection from the correct package
 
-    const rawEntries = snapshot.docs.map(doc => ({
-      date: doc.id,
-      ...doc.data()
-    }));
+            const rawEntries = snapshot.docs.map(doc => ({
+                date: doc.id,
+                ...doc.data()
+            }));
 
     // Group by week (Sunday) and keep only one check-in per week
     const weekMap: { [weekStart: string]: any } = {};
@@ -101,9 +103,9 @@ useEffect(() => {
     setHistory(weekWiseEntries);
 
   } catch (error) {
-    console.error('❌ Error loading history from Firestore:', error);
-  }
-};
+            console.error('❌ Error loading history from Firestore:', error);
+        }
+  };
 
   
   const [showForm, setShowForm] = useState(true);

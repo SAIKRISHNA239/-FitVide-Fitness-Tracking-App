@@ -7,7 +7,7 @@ import {
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
-import { app } from "./firebase";
+import { app } from "../firebase";
 
 const db = getFirestore(app);
 type Macros = {

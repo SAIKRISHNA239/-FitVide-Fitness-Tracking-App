@@ -1,11 +1,16 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { collection, getDocs } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
-export const getLogs = async (key: string) => {
+export const getLogs = async (collectionName: string) => {
+  const user = auth.currentUser;
+  if (!user) return [];
+
   try {
-    const stored = await AsyncStorage.getItem(key);
-    return stored ? JSON.parse(stored) : [];
+    const logsCollectionRef = collection(db, collectionName, user.uid, "logs");
+    const snapshot = await getDocs(logsCollectionRef);
+    return snapshot.docs.map(doc => doc.data());
   } catch (err) {
-    console.error(`Failed to load ${key}`, err);
+    console.error(`Failed to load ${collectionName}`, err);
     return [];
   }
 };

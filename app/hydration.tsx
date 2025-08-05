@@ -10,7 +10,8 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc } from "firebase/firestore
 import { useAuth } from "../context/AuthContext";
 
 const screenWidth = Dimensions.get("window").width;
-const firestore = getFirestore();
+import { db as firestore } from "../firebase";
+
 
 const WaterScreen = () => {
   const { isDarkMode } = useTheme();

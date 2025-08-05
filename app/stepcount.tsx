@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, ScrollView } from "react-native";
-import { db } from "../app/firebase";
+import { db } from "../firebase";
 import { collection, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 import dayjs from "dayjs";
 import Back from "./back";

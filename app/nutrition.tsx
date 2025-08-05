@@ -18,7 +18,7 @@ import { useNutrition } from "../context/NutritionContext";
 import { getStyles } from "../styles/nutritionstyle";
 import Back from './back';
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, auth } from "../app/firebase";
+import { db, auth } from "../firebase";
 
 const meals = ["Breakfast", "Lunch", "Dinner"];
 

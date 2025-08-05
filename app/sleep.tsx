@@ -17,7 +17,7 @@ import { useTheme } from "../context/ThemeContext";
 import Back from './back';
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-import { app } from "./firebase";
+import { app } from "../firebase";
 
 interface SleepLog {
   date: string;

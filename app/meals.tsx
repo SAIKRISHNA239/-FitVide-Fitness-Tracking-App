@@ -14,8 +14,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../app/firebase"; // or correct relative path
-import { auth } from "../app/firebase";
+import { db, auth } from "../firebase";
 import foodDatabase from "../data/foodDatabase.json";
 import { useTheme } from "../context/ThemeContext";
 import { Ionicons, Feather } from "@expo/vector-icons";
