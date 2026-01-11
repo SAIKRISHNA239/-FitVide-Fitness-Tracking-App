@@ -4,12 +4,9 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, Alert
 } from "react-native";
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
+import { supabase } from "../lib/supabase";
 import { useTheme } from "../context/ThemeContext";
-import { app } from "../firebase";
-
-const db = getFirestore(app);
+import { useAuth } from "../context/AuthContext";
 type Macros = {
   calories: number;
   protein: number;
@@ -19,9 +16,8 @@ type Macros = {
 
 export default function ProfileScreen() {
   const { isDarkMode } = useTheme();
+  const { user, logout, deleteAccount } = useAuth();
   const stylesSheet = darkStyles;
-  const auth = getAuth();
-  const user = auth.currentUser;
 
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("male");
@@ -47,20 +43,34 @@ export default function ProfileScreen() {
 
   const loadProfile = async () => {
     if (!user) return;
-    const profileRef = doc(db, "users", user.uid);
-    const profileSnap = await getDoc(profileRef);
-    if (profileSnap.exists()) {
-      const data = profileSnap.data();
-      setAge(data.age);
-      setGender(data.gender);
-      setHeight(data.height);
-      setWeight(data.weight);
-      setActivity(data.activity);
-      setGoal(data.goal);
-      setMacroTargets(data.macroTargets || null);
-      setCustomMacroTargets(data.customMacroTargets || null);
-      setIsEditing(false);
-    } else {
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (data) {
+        setAge(data.age?.toString() || '');
+        setGender(data.gender || 'male');
+        setHeight(data.height?.toString() || '');
+        setWeight(data.weight?.toString() || '');
+        setActivity(data.activity || 'moderate');
+        setGoal(data.goal || 'maintain');
+        setMacroTargets(data.macro_targets || null);
+        setCustomMacroTargets(data.custom_macro_targets || null);
+        setIsEditing(false);
+      } else {
+        setIsEditing(true);
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
       setIsEditing(true);
     }
   };
@@ -93,29 +103,56 @@ export default function ProfileScreen() {
       carbs: Math.round((calories - w * 2.2 * 4 - calories * 0.25) / 4),
     };
 
-    const data = {
-      age, gender, height, weight, activity, goal,
-      macroTargets: macros,
-    };
-    if (user) await setDoc(doc(db, "users", user.uid), data);
+    if (!user) return;
 
-    setMacroTargets(macros);
-    setIsEditing(false);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          age: parseInt(age),
+          gender,
+          height: parseFloat(height),
+          weight: parseFloat(weight),
+          activity,
+          goal,
+          macro_targets: macros,
+        });
+
+      if (error) throw error;
+
+      setMacroTargets(macros);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      Alert.alert('Error', 'Failed to save profile');
+    }
   };
 
   const saveCustomMacros = async () => {
+    if (!user) return;
+
     const custom = {
       calories: parseInt(customCalories),
       protein: parseInt(customProtein),
       carbs: parseInt(customCarbs),
       fats: parseInt(customFats),
     };
-    if (user) await setDoc(doc(db, "users", user.uid), {
-      customMacroTargets: custom
-    }, { merge: true });
 
-    setCustomMacroTargets(custom);
-    setCustomMode(false);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ custom_macro_targets: custom })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setCustomMacroTargets(custom);
+      setCustomMode(false);
+    } catch (error) {
+      console.error('Error saving custom macros:', error);
+      Alert.alert('Error', 'Failed to save custom macros');
+    }
   };
 
   const deleteProfile = async () => {
@@ -131,58 +168,36 @@ export default function ProfileScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              // 1. Delete all exercise logs
-              const exerciseLogsRef = collection(db, "exerciseLogs", user.uid, "logs");
-              const exerciseLogsSnapshot = await getDocs(exerciseLogsRef);
-              const exerciseDeletePromises = exerciseLogsSnapshot.docs.map((docSnap) =>
-                deleteDoc(doc(db, "exerciseLogs", user.uid, "logs", docSnap.id))
-              );
-              await Promise.all(exerciseDeletePromises);
-              
-              // 2. Delete all meal documents where ID starts with {uid}_
-              const mealsRef = collection(db, "meals");
-              const mealsSnapshot = await getDocs(mealsRef);
-              const mealDeletePromises = mealsSnapshot.docs
-                .filter((docSnap) => docSnap.id.startsWith(`${user.uid}_`))
-                .map((docSnap) => deleteDoc(doc(db, "meals", docSnap.id)));
-              await Promise.all(mealDeletePromises);
-              
-              // 3. Delete other log collections (hydration, nutrition, sleep)
-              const logCollections = ["hydrationLogs", "dailyNutritionLogs", "sleepLogs"];
-              for (const collectionName of logCollections) {
-                const logsRef = collection(db, collectionName, user.uid, "logs");
-                const logsSnapshot = await getDocs(logsRef);
-                const logDeletePromises = logsSnapshot.docs.map((docSnap) =>
-                  deleteDoc(doc(db, collectionName, user.uid, "logs", docSnap.id))
-                );
-                await Promise.all(logDeletePromises);
-              }
-              
-              // 4. Delete nutrition document
-              const nutritionRef = doc(db, "nutrition", user.uid);
-              const nutritionSnap = await getDoc(nutritionRef);
-              if (nutritionSnap.exists()) {
-                await deleteDoc(nutritionRef);
-              }
-              
-              // 5. Delete hydration history (if stored separately)
-              const hydrationRef = doc(db, `users/${user.uid}/hydration/history`);
-              const hydrationSnap = await getDoc(hydrationRef);
-              if (hydrationSnap.exists()) {
-                await deleteDoc(hydrationRef);
-              }
-              
-              // 6. Finally, delete user document
-              await deleteDoc(doc(db, "users", user.uid));
+              // Use the RPC function to delete user account
+              // This will cascade delete all related data (workouts, meals, etc.)
+              await deleteAccount();
               
               setAge(""); setHeight(""); setWeight("");
               setMacroTargets(null); setCustomMacroTargets(null);
               setIsEditing(true);
               
               Alert.alert("Success", "Profile and all associated data have been deleted.");
-            } catch (error) {
+            } catch (error: any) {
               console.error("Error deleting profile:", error);
-              Alert.alert("Error", "Failed to delete profile. Please try again.");
+              
+              // Handle requires-recent-login equivalent
+              if (error?.message?.includes('log out and log back in')) {
+                Alert.alert(
+                  "Authentication Required",
+                  error.message,
+                  [
+                    {
+                      text: "OK",
+                      onPress: async () => {
+                        await logout();
+                      },
+                    },
+                  ]
+                );
+                return;
+              }
+              
+              Alert.alert("Error", error.message || "Failed to delete profile. Please try again.");
             }
           },
         },
@@ -236,11 +251,19 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity style={[stylesSheet.button, { flex: 1, backgroundColor: "#ff4d4f" }]} onPress={async () => {
                   if (user) {
-                    await setDoc(doc(db, "users", user.uid), {
-                      customMacroTargets: null,
-                    }, { merge: true });
+                    try {
+                      const { error } = await supabase
+                        .from('profiles')
+                        .update({ custom_macro_targets: null })
+                        .eq('id', user.id);
+                      
+                      if (error) throw error;
+                      setCustomMacroTargets(null);
+                    } catch (error) {
+                      console.error('Error deleting custom macros:', error);
+                      Alert.alert('Error', 'Failed to delete custom macros');
+                    }
                   }
-                  setCustomMacroTargets(null);
                 }}>
                   <Text style={stylesSheet.buttonText}>🗑️ Delete</Text>
                 </TouchableOpacity>

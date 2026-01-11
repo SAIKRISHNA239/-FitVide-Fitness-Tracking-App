@@ -15,16 +15,17 @@ import SleepTimePicker from "../context/timepicker";
 import BottomNavBar from './BottomNavBar';
 import { useTheme } from "../context/ThemeContext";
 import Back from './back';
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-import { app } from "../firebase";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
+import dayjs from "dayjs";
 
 interface SleepLog {
+  id?: string;
   date: string;
-  sleepTime: Date;
-  wakeTime: Date;
-  duration: string;
-  quality: string;
+  sleep_time: string;
+  wake_time: string;
+  duration: number;
+  quality: number;
   notes: string;
 }
 
@@ -52,72 +53,95 @@ const convertToDate = (timeObj: TimeValue): Date => {
 
 const SleepScreen = () => {
   const { isDarkMode } = useTheme();
-  const auth = getAuth();
-  const user = auth.currentUser;
-  const db = getFirestore(app);
+  const { user } = useAuth();
 
   const [sleepTimeInput, setSleepTimeInput] = useState<TimeValue>({ hour: "10", minute: "00", amPm: "PM" });
   const [wakeTimeInput, setWakeTimeInput] = useState<TimeValue>({ hour: "6", minute: "00", amPm: "AM" });
   const [quality, setQuality] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [logs, setLogs] = useState<SleepLog[]>([]);
-  const [editingIndex, setEditingIndex] = useState<number>(-1);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const saveLog = async () => {
     if (!user) return;
+    
     const sleepTime = convertToDate(sleepTimeInput);
     const wakeTime = convertToDate(wakeTimeInput);
-    const today = new Date().toISOString().split("T")[0];
+    const today = dayjs().format("YYYY-MM-DD");
 
     let sleepHours = (wakeTime.getTime() - sleepTime.getTime()) / 1000 / 60 / 60;
     if (sleepHours < 0) sleepHours += 24;
 
-    if (!quality || isNaN(Number(quality)) || Number(quality) < 1 || Number(quality) > 5) {
+    const qualityNum = Number(quality);
+    if (!quality || isNaN(qualityNum) || qualityNum < 1 || qualityNum > 5) {
       Alert.alert("Invalid Input", "Please enter a sleep quality between 1 and 5.");
       return;
     }
 
-    const newLog: SleepLog = {
-      date: today,
-      sleepTime,
-      wakeTime,
-      duration: sleepHours.toFixed(2),
-      quality,
-      notes,
-    };
-
-    const updatedLogs = [...logs];
-    const existingLogIndex = logs.findIndex(log => log.date === today);
-    if (existingLogIndex !== -1) {
-      updatedLogs[existingLogIndex] = newLog;
-    } else {
-      updatedLogs.push(newLog);
-    }
-
     try {
-      await setDoc(doc(db, "sleepLogs", user.uid), { logs: updatedLogs });
-      setLogs(updatedLogs);
+      const sleepLogData = {
+        user_id: user.id,
+        date: today,
+        sleep_time: sleepTime.toISOString(),
+        wake_time: wakeTime.toISOString(),
+        duration: parseFloat(sleepHours.toFixed(2)),
+        quality: qualityNum,
+        notes: notes || "",
+      };
+
+      if (editingId) {
+        // Update existing log
+        const { error } = await supabase
+          .from('sleep_logs')
+          .update(sleepLogData)
+          .eq('id', editingId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new log (upsert to handle duplicates)
+        const { error } = await supabase
+          .from('sleep_logs')
+          .upsert(sleepLogData, {
+            onConflict: 'user_id,date'
+          });
+
+        if (error) throw error;
+      }
+
+      await loadLogs();
       resetForm();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error saving log:", err);
+      Alert.alert("Error", err.message || "Failed to save sleep log");
     }
   };
 
   const loadLogs = async () => {
     if (!user) return;
+    
     try {
-      const docRef = doc(db, "sleepLogs", user.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const rawLogs: SleepLog[] = docSnap.data().logs || [];
-        const parsedLogs = rawLogs.map((log: any) => ({
-          ...log,
-          sleepTime: new Date(log.sleepTime),
-          wakeTime: new Date(log.wakeTime),
+      const { data, error } = await supabase
+        .from('sleep_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const parsedLogs: SleepLog[] = data.map((log: any) => ({
+          id: log.id,
+          date: log.date,
+          sleep_time: log.sleep_time,
+          wake_time: log.wake_time,
+          duration: log.duration,
+          quality: log.quality,
+          notes: log.notes || "",
         }));
         setLogs(parsedLogs);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading logs:", err);
     }
   };
@@ -127,26 +151,39 @@ const SleepScreen = () => {
     setWakeTimeInput({ hour: "6", minute: "00", amPm: "AM" });
     setQuality("");
     setNotes("");
-    setEditingIndex(-1);
+    setEditingId(null);
   };
 
-  const deleteLog = async (index: number) => {
+  const deleteLog = async (id: string) => {
     if (!user) return;
+    
     Alert.alert("Confirm Delete", "Are you sure you want to delete this log?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          const updated = logs.filter((_, i) => i !== index);
-          setLogs(updated);
-          await setDoc(doc(db, "sleepLogs", user.uid), { logs: updated });
+          try {
+            const { error } = await supabase
+              .from('sleep_logs')
+              .delete()
+              .eq('id', id)
+              .eq('user_id', user.id);
+
+            if (error) throw error;
+
+            await loadLogs();
+          } catch (err: any) {
+            console.error("Error deleting log:", err);
+            Alert.alert("Error", "Failed to delete log");
+          }
         },
       },
     ]);
   };
 
-  const convertFromDate = (date: Date): TimeValue => {
+  const convertFromDate = (dateString: string): TimeValue => {
+    const date = new Date(dateString);
     let hour = date.getHours();
     const minute = date.getMinutes();
     const amPm = (hour >= 12 ? "PM" : "AM") as "AM" | "PM";
@@ -158,24 +195,25 @@ const SleepScreen = () => {
     };
   };
 
-  const editLog = (index: number) => {
-    const log = logs[index];
-    setSleepTimeInput(convertFromDate(log.sleepTime));
-    setWakeTimeInput(convertFromDate(log.wakeTime));
-    setQuality(log.quality);
+  const editLog = (log: SleepLog) => {
+    setSleepTimeInput(convertFromDate(log.sleep_time));
+    setWakeTimeInput(convertFromDate(log.wake_time));
+    setQuality(log.quality.toString());
     setNotes(log.notes);
-    setEditingIndex(index);
+    setEditingId(log.id || null);
   };
 
   useEffect(() => {
-    loadLogs();
-  }, []);
+    if (user) {
+      loadLogs();
+    }
+  }, [user]);
 
   const chartData = {
-    labels: logs.slice(-7).map((l) => l.date),
+    labels: logs.slice(-7).map((l) => dayjs(l.date).format("MM/DD")),
     datasets: [
       {
-        data: logs.slice(-7).map((l) => parseFloat(l.duration)).map((val) => (isNaN(val) ? 0 : val)),
+        data: logs.slice(-7).map((l) => l.duration),
       },
     ],
   };
@@ -204,18 +242,18 @@ const SleepScreen = () => {
         <Text style={dynamicStyles.label}>Notes</Text>
         <TextInput style={dynamicStyles.input} value={notes} onChangeText={setNotes} placeholder="e.g., Felt rested" />
 
-        <Button title={editingIndex >= 0 ? "Update Log" : "Save Log"} onPress={saveLog} />
+        <Button title={editingId ? "Update Log" : "Save Log"} onPress={saveLog} />
 
         <Text style={dynamicStyles.subHeader}>Saved Logs</Text>
-        {logs.map((log, index) => (
-          <View key={index} style={dynamicStyles.logCard}>
+        {logs.map((log) => (
+          <View key={log.id} style={dynamicStyles.logCard}>
             <Text style={dynamicStyles.logText}>📅 {log.date} | 🛌 {log.duration} hrs | ⭐ {log.quality}</Text>
             <Text style={dynamicStyles.logText}>📝 {log.notes}</Text>
             <View style={dynamicStyles.logActions}>
-              <TouchableOpacity onPress={() => editLog(index)}>
+              <TouchableOpacity onPress={() => editLog(log)}>
                 <Text style={dynamicStyles.actionText}>Edit</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteLog(index)}>
+              <TouchableOpacity onPress={() => deleteLog(log.id!)}>
                 <Text style={[dynamicStyles.actionText, { color: "red" }]}>Delete</Text>
               </TouchableOpacity>
             </View>

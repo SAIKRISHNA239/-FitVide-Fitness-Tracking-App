@@ -5,13 +5,10 @@ import CircularProgress from "react-native-circular-progress-indicator";
 import { BarChart } from "react-native-chart-kit";
 import dayjs from "dayjs";
 import Back from "./back";
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
 
 const screenWidth = Dimensions.get("window").width;
-import { db as firestore } from "../firebase";
-
 
 const WaterScreen = () => {
   const { isDarkMode } = useTheme();
@@ -50,46 +47,94 @@ const WaterScreen = () => {
     if (user) {
       saveTodayHydrationLog(intake, usingCreatine);
     }
-  }, [intake, goal]);
+  }, [intake, usingCreatine]);
 
   const loadProfileData = async () => {
-    const ref = doc(firestore, `users/${user?.uid}/profile/data`);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      const data = snap.data();
-      setBodyWeight(data.weight || "");
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('weight')
+        .eq('id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (data?.weight) {
+        setBodyWeight(data.weight.toString());
+      }
+    } catch (error) {
+      console.error('Error loading profile data:', error);
     }
   };
 
   const loadData = async () => {
-    const ref = doc(firestore, `users/${user?.uid}/hydration/history`);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      const logs = snap.data();
-      const todayLog = logs[todayKey];
-      setIntake(todayLog?.amount || 0);
-      setUsingCreatine(todayLog?.creatine || false);
-      const sixMonthsAgo = dayjs().subtract(6, "month");
-      const filtered = Object.entries(logs)
-        .filter(([date]) => dayjs(date).isAfter(sixMonthsAgo))
-        .map(([date, data]: any) => ({ date, ...data }))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      setHistory(filtered);
+    if (!user) return;
+    
+    try {
+      // Load today's hydration log
+      const { data: todayData } = await supabase
+        .from('hydration_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', todayKey)
+        .single();
+
+      if (todayData) {
+        setIntake(todayData.amount || 0);
+        setUsingCreatine(todayData.creatine || false);
+      }
+
+      // Load last 6 months of history
+      const sixMonthsAgo = dayjs().subtract(6, "month").format("YYYY-MM-DD");
+      const { data: historyData } = await supabase
+        .from('hydration_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', sixMonthsAgo)
+        .order('date', { ascending: true });
+
+      if (historyData) {
+        const filtered = historyData.map((log: any) => ({
+          date: log.date,
+          amount: log.amount,
+          creatine: log.creatine,
+        }));
+        setHistory(filtered);
+      }
+    } catch (error) {
+      console.error('Error loading hydration data:', error);
     }
   };
 
   const saveTodayHydrationLog = async (intake: number, usingCreatine: boolean) => {
-    const ref = doc(firestore, `users/${user?.uid}/hydration/history`);
-    const snap = await getDoc(ref);
-    const existing = snap.exists() ? snap.data() : {};
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('hydration_logs')
+        .upsert({
+          user_id: user.id,
+          date: todayKey,
+          amount: intake,
+          creatine: usingCreatine,
+        }, {
+          onConflict: 'user_id,date'
+        });
 
-    const updated = {
-      ...existing,
-      [todayKey]: { amount: intake, creatine: usingCreatine },
-    };
-
-    await setDoc(ref, updated);
-    loadData();
+      if (error) {
+        console.error('Error saving hydration log:', error);
+      } else {
+        // Reload data to update history
+        loadData();
+      }
+    } catch (error) {
+      console.error('Error saving hydration log:', error);
+    }
   };
 
   const addIntake = (amount: number) => {

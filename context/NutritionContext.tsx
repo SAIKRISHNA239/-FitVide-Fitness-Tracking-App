@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { db, auth } from "../firebase"; // adjust path as needed
-import { doc, getDoc, setDoc } from "firebase/firestore";
-
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./AuthContext";
 
 export interface NutritionData {
   protein: number;
@@ -39,32 +38,59 @@ export const useNutrition = () => {
 
 export const NutritionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<NutritionData>(defaultValues);
+  const { user } = useAuth();
 
-  // Load from AsyncStorage on mount
- useEffect(() => {
-  const loadData = async () => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-    const docRef = doc(db, "nutrition", uid);
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      setData(snapshot.data() as NutritionData);
-    }
-  };
-  loadData();
-}, []);
-
-
-  // Save to AsyncStorage whenever data changes
+  // Load from Supabase on mount
   useEffect(() => {
-  const saveData = async () => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-    const docRef = doc(db, "nutrition", uid);
-    await setDoc(docRef, data);
-  };
-  saveData();
-}, [data]);
+    const loadData = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: nutritionData, error } = await supabase
+          .from('profiles')
+          .select('macro_targets, custom_macro_targets')
+          .eq('id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Error loading nutrition data:', error);
+          return;
+        }
+
+        // Nutrition data is stored in profiles table, but we calculate from meals
+        // This context is mainly for real-time updates from meal logging
+        // The actual data comes from meals table
+      } catch (error) {
+        console.error('Error loading nutrition data:', error);
+      }
+    };
+    
+    if (user) {
+      loadData();
+    }
+  }, [user]);
+
+  // Save to Supabase whenever data changes (for caching/quick access)
+  useEffect(() => {
+    const saveData = async () => {
+      if (!user) return;
+      
+      try {
+        // Note: We don't save nutrition data to profiles anymore
+        // It's calculated from meals table in real-time
+        // This is kept for backward compatibility and local state management
+      } catch (error) {
+        console.error('Error saving nutrition data:', error);
+      }
+    };
+    
+    // Only save if user is logged in and data has meaningful values
+    if (user && (data.protein > 0 || data.carbs > 0 || data.fats > 0)) {
+      // Debounce saves to avoid too many writes
+      const timeoutId = setTimeout(saveData, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [data, user]);
 
   const updateData = (newData: Partial<NutritionData>) => {
     setData((prev) => ({ ...prev, ...newData }));

@@ -1,0 +1,48 @@
+# docker-compose.yml
+# Local development setup with Supabase and Web App
+
+version: '3.8'
+
+services:
+  # Supabase Local Development
+  # Note: For full Supabase local setup, use Supabase CLI:
+  #   supabase start
+  # This compose file assumes you're using Supabase Cloud or have Supabase running separately
+  
+  # Web App Container
+  web-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fitvide-web-app
+    ports:
+      - "3000:80"
+    environment:
+      - EXPO_PUBLIC_SUPABASE_URL=${EXPO_PUBLIC_SUPABASE_URL}
+      - EXPO_PUBLIC_SUPABASE_ANON_KEY=${EXPO_PUBLIC_SUPABASE_ANON_KEY}
+    restart: unless-stopped
+    networks:
+      - fitvide-network
+
+  # Optional: PostgreSQL for local Supabase (if not using Supabase Cloud)
+  # Uncomment if you want to run a local Postgres instance
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: fitvide-postgres
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: postgres
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - fitvide-network
+
+networks:
+  fitvide-network:
+    driver: bridge
+
+# volumes:
+#   postgres-data:

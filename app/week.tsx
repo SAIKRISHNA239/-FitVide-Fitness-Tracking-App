@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useMemo, useRef  } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Platform, Alert, Dimensions,  InteractionManager 
+  StyleSheet, Platform, Alert, Dimensions, InteractionManager 
 } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../context/ThemeContext';
 import { LineChart } from 'react-native-chart-kit';
@@ -11,14 +10,14 @@ import { TextStyle, ViewStyle } from 'react-native';
 import { darkStyles } from '../context/styles';
 import Back from './back';
 import { startOfWeek, formatISO } from 'date-fns';
-
-import { db } from '../firebase'; // Correct import
-import { collection, doc, getDocs, setDoc, deleteDoc, writeBatch } from 'firebase/firestore'; // Correct import
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+import dayjs from 'dayjs';
 
 export default function WeeklyCheckIn() {
-    
   const { isDarkMode } = useTheme();
-  const styles =  darkStyles ;
+  const { user } = useAuth();
+  const styles = darkStyles;
   const [expandedLogs, setExpandedLogs] = useState<number[]>([]);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -33,115 +32,109 @@ export default function WeeklyCheckIn() {
   const [summary, setSummary] = useState('');
   const [history, setHistory] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const screenWidth = Dimensions.get('window').width - 40;
 
-   // ⬇ Load from storage on first render
-   useEffect(() => {
-    loadHistory();
-  }, []);
-
-  
-// ⬇ Save to Firestore when history updates
-useEffect(() => {
-  const saveHistory = async () => {
-        try {
-            const batch = writeBatch(db); // Use writeBatch from the correct package
-
-            history.forEach((entry) => {
-                const docRef = doc(db, 'checkins', entry.date); // Use doc from the correct package
-                batch.set(docRef, {
-                    measurements: entry.measurements,
-                    mood: entry.mood,
-                    energy: entry.energy,
-                    notes: entry.notes || '',
-                });
-            });
-
-            await batch.commit();
-            console.log('✅ History saved to Firestore');
-        } catch (error) {
-            console.error('❌ Error saving history to Firestore:', error);
-        }
-    };
-  if (history.length > 0) {
-    saveHistory();
-  }
-}, [history]);
+  useEffect(() => {
+    if (user) {
+      loadHistory();
+    }
+  }, [user]);
 
   const getWeekStartDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    const sunday = startOfWeek(date, { weekStartsOn: 0 }); // Sunday
-    return formatISO(sunday, { representation: 'date' }); // e.g. "2025-04-13"
+    const sunday = startOfWeek(date, { weekStartsOn: 0 });
+    return formatISO(sunday, { representation: 'date' });
   };
   
   const loadHistory = async () => {
-        try {
-            const snapshot = await getDocs(collection(db, 'checkins')); // Use getDocs and collection from the correct package
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('weekly_checkins')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
 
-            const rawEntries = snapshot.docs.map(doc => ({
-                date: doc.id,
-                ...doc.data()
-            }));
+      if (error) {
+        console.error('Error loading check-ins:', error);
+        return;
+      }
 
-    // Group by week (Sunday) and keep only one check-in per week
-    const weekMap: { [weekStart: string]: any } = {};
+      if (data) {
+        // Group by week (Sunday) and keep only one check-in per week
+        const weekMap: { [weekStart: string]: any } = {};
 
-    rawEntries.forEach((entry) => {
-      const weekStart = getWeekStartDate(entry.date);
-      weekMap[weekStart] = entry; // Overwrite with latest entry per week
-    });
+        data.forEach((entry: any) => {
+          const weekStart = getWeekStartDate(entry.date);
+          weekMap[weekStart] = entry; // Overwrite with latest entry per week
+        });
 
-    const weekWiseEntries = Object.entries(weekMap)
-      .map(([weekStart, data]) => ({
-        weekStart,
-        ...data,
-      }))
-      .sort((a, b) => new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime());
+        const weekWiseEntries = Object.entries(weekMap)
+          .map(([weekStart, data]) => ({
+            weekStart,
+            ...data,
+          }))
+          .sort((a, b) => new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime());
 
-    setHistory(weekWiseEntries);
-
-  } catch (error) {
-            console.error('❌ Error loading history from Firestore:', error);
-        }
+        setHistory(weekWiseEntries);
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
+    }
   };
 
-  
   const [showForm, setShowForm] = useState(true);
 
   const saveCheckIn = async () => {
+    if (!user) return;
+    
     if (Object.values(measurements).some(val => val === '') || !mood || !energy) {
       Alert.alert('⚠️ Missing Fields', 'Please fill in all fields.');
       return;
     }
   
-    const key = `checkin-${date.toISOString().split('T')[0]}`;
+    const checkInDate = dayjs(date).format('YYYY-MM-DD');
     const entry = {
-      date: key.replace('checkin-', ''),
+      user_id: user.id,
+      date: checkInDate,
       measurements,
-      mood,
-      energy,
-      notes,
+      mood: parseInt(mood),
+      energy: parseInt(energy),
+      notes: notes || '',
     };
   
     try {
-      await firestore().collection('checkins').doc(entry.date).set(entry);
+      if (editingId) {
+        // Update existing check-in
+        const { error } = await supabase
+          .from('weekly_checkins')
+          .update(entry)
+          .eq('id', editingId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new check-in (upsert to handle duplicates)
+        const { error } = await supabase
+          .from('weekly_checkins')
+          .upsert(entry, {
+            onConflict: 'user_id,date'
+          });
+
+        if (error) throw error;
+      }
+
       Alert.alert('✅ Saved', 'Check-in submitted successfully!');
       generateSummary(entry);
   
-      setHistory(prev => {
-        const filtered = prev.filter(e => e.date !== entry.date);
-        const updated = [...filtered, entry];
-        const sorted = updated.sort((a, b) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-        return sorted;
-      });
+      await loadHistory();
   
       setShowForm(false);
   
-      // ✅ Reset state if not editing
+      // Reset state if not editing
       if (!isEditing) {
         setDate(new Date());
         setMeasurements({
@@ -152,11 +145,12 @@ useEffect(() => {
         setNotes('');
       }
   
-      setIsEditing(false); // Always reset editing mode after saving
+      setIsEditing(false);
+      setEditingId(null);
   
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save error:', error);
-      Alert.alert('❌ Error', 'Failed to save check-in.');
+      Alert.alert('❌ Error', error.message || 'Failed to save check-in.');
     }
   };
   
@@ -224,17 +218,58 @@ useEffect(() => {
     </>
   );
 
-  
+  const handleEdit = (entry: any) => {
+    setDate(new Date(entry.date));
+    setMeasurements(entry.measurements);
+    setMood(entry.mood.toString());
+    setEnergy(entry.energy.toString());
+    setNotes(entry.notes || '');
+    setSummary('');
+    setShowForm(true);
+    setIsEditing(true);
+    setEditingId(entry.id);
+    InteractionManager.runAfterInteractions(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+    });
+  };
+
+  const handleDelete = async (entry: any) => {
+    if (!user) return;
+    
+    Alert.alert("Confirm Delete", "Are you sure you want to delete this check-in?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const { error } = await supabase
+              .from('weekly_checkins')
+              .delete()
+              .eq('id', entry.id)
+              .eq('user_id', user.id);
+
+            if (error) throw error;
+
+            await loadHistory();
+          } catch (error: any) {
+            console.error('Error deleting check-in:', error);
+            Alert.alert('Error', 'Failed to delete check-in');
+          }
+        },
+      },
+    ]);
+  };
 
   // 📚 Past Logs
   const renderPastLogs = () => (
     <>
       <Text style={styles.section}>📚 Past Check-Ins</Text>
-      {history.map((entry, index) =>{
+      {history.map((entry, index) => {
         const isExpanded = expandedLogs.includes(index);
         return (
           <TouchableOpacity
-            key={index}
+            key={entry.id || index}
             onPress={() => {
               if (isExpanded) {
                 setExpandedLogs(expandedLogs.filter((i) => i !== index));
@@ -265,30 +300,14 @@ useEffect(() => {
                 <View style={{ flexDirection: 'row', marginTop: 10, justifyContent: 'space-between' }}>
                   <TouchableOpacity
                     style={[styles.button, { flex: 1, marginRight: 5 }]}
-                    onPress={() => {
-                      setDate(new Date(entry.date));
-                      setMeasurements(entry.measurements);
-                      setMood(entry.mood);
-                      setEnergy(entry.energy);
-                      setNotes(entry.notes);
-                      setSummary('');
-                      setShowForm(true);
-                      setIsEditing(true); // ✅ Enable edit mode
-                      InteractionManager.runAfterInteractions(() => {
-                        scrollRef.current?.scrollTo({ y: 0, animated: true });
-                      });
-                    }}
+                    onPress={() => handleEdit(entry)}
                   >
                     <Text style={styles.buttonText}>✏️ Edit</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.button, { flex: 1, marginLeft: 5, backgroundColor: '#e74c3c' }]}
-                    onPress={async () => {
-                        await firestore().collection('checkins').doc(entry.date).delete();
-                        const newHistory = history.filter((_, i) => i !== index);
-                        setHistory(newHistory);
-                    }}                      
+                    onPress={() => handleDelete(entry)}
                   >
                     <Text style={styles.buttonText}>🗑️ Delete</Text>
                   </TouchableOpacity>
@@ -303,176 +322,104 @@ useEffect(() => {
 
   return (
     <View style={{ flex: 1 }}>
-        <Back />
-    <ScrollView ref={scrollRef} contentContainerStyle={styles.container}>
-      <Text style={styles.header}>📅 Weekly Check-In</Text>
+      <Back />
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.container}>
+        <Text style={styles.header}>📅 Weekly Check-In</Text>
   
-      {showForm && (
-        <>
-          <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.datePicker}>
-            <Text style={styles.label}>Date: {date.toDateString()}</Text>
-          </TouchableOpacity>
+        {showForm && (
+          <>
+            <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.datePicker}>
+              <Text style={styles.label}>Date: {date.toDateString()}</Text>
+            </TouchableOpacity>
   
-          {showPicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(e, selected) => {
-                setShowPicker(false);
-                if (selected) setDate(selected);
-              }}
-            />
-          )}
+            {showPicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(e, selected) => {
+                  setShowPicker(false);
+                  if (selected) setDate(selected);
+                }}
+              />
+            )}
   
-          <Text style={styles.section}>📏 Body Measurements (cm/kg)</Text>
-          {Object.keys(measurements).map((key) => (
-            <TextInput
-              key={key}
-              placeholder={`${key.charAt(0).toUpperCase() + key.slice(1)} (${key === 'weight' ? 'kg' : 'cm'})`}
-              keyboardType="numeric"
-              style={styles.input}
-              value={measurements[key as keyof typeof measurements]}
-              onChangeText={(val) => setMeasurements({ ...measurements, [key]: val })}
-            />
-          ))}
-  
-          <Text style={styles.section}>📝 Progress Notes</Text>
-          <TextInput
-            placeholder="Any comments about your week..."
-            style={styles.input}
-            multiline
-            numberOfLines={3}
-            value={notes}
-            onChangeText={setNotes}
-          />
-  
-          <Text style={styles.section}>😄 Mood & ⚡ Energy Rating (1–10)</Text>
-          <Text style={styles.label}>Mood</Text>
-          <StarRating rating={+mood} onRate={(val) => setMood(val.toString())} />
-          <Text style={styles.label}>Energy</Text>
-          <StarRating rating={+energy} onRate={(val) => setEnergy(val.toString())} />
-  
-          <TouchableOpacity style={styles.button} onPress={saveCheckIn}>
-            <Text style={styles.buttonText}>✅ Submit Check-In</Text>
-          </TouchableOpacity>
-        </>
-      )}
-  
-      {summary !== '' && (
-        <>
-          <View style={styles.summaryBox}>
-            <Text style={styles.summaryText}>🧠 Summary: {summary}</Text>
-          </View>
-  
-          <View style={styles.summaryBox}>
-            <Text style={styles.label}>✅ Submitted Log</Text>
-            {Object.entries(measurements).map(([k, v]) => (
-              <Text key={k} style={styles.summaryText}>
-                {`${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`}
-              </Text>
+            <Text style={styles.section}>📏 Body Measurements (cm/kg)</Text>
+            {Object.keys(measurements).map((key) => (
+              <TextInput
+                key={key}
+                placeholder={`${key.charAt(0).toUpperCase() + key.slice(1)} (${key === 'weight' ? 'kg' : 'cm'})`}
+                keyboardType="numeric"
+                style={styles.input}
+                value={measurements[key as keyof typeof measurements]}
+                onChangeText={(val) => setMeasurements({ ...measurements, [key]: val })}
+              />
             ))}
-            <Text style={styles.summaryText}>Mood: {mood}/10</Text>
-            <Text style={styles.summaryText}>Energy: {energy}/10</Text>
-            {notes ? <Text style={styles.summaryText}>Notes: {notes}</Text> : null}
-          </View>
   
-          <TouchableOpacity
-            style={[styles.button, { marginTop: 10 }]}
-            onPress={() => {
-              const next = new Date(date);
-              next.setDate(date.getDate() + 7);
-              setDate(next);
-              setMeasurements({ weight: '', arms: '', chest: '', waist: '', hips: '', thighs: '' });
-              setMood('');
-              setEnergy('');
-              setNotes('');
-              setSummary('');
-              setShowForm(true);
-            }}
-          >
-            <Text style={styles.buttonText}>🗓️ Log for Next Week</Text>
-          </TouchableOpacity>
-        </>
-      )}
+            <Text style={styles.section}>📝 Progress Notes</Text>
+            <TextInput
+              placeholder="Any comments about your week..."
+              style={styles.input}
+              multiline
+              numberOfLines={3}
+              value={notes}
+              onChangeText={setNotes}
+            />
+  
+            <Text style={styles.section}>😄 Mood & ⚡ Energy Rating (1–10)</Text>
+            <Text style={styles.label}>Mood</Text>
+            <StarRating rating={+mood} onRate={(val) => setMood(val.toString())} />
+            <Text style={styles.label}>Energy</Text>
+            <StarRating rating={+energy} onRate={(val) => setEnergy(val.toString())} />
+  
+            <TouchableOpacity style={styles.button} onPress={saveCheckIn}>
+              <Text style={styles.buttonText}>✅ Submit Check-In</Text>
+            </TouchableOpacity>
+          </>
+        )}
+  
+        {summary !== '' && (
+          <>
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryText}>🧠 Summary: {summary}</Text>
+            </View>
+  
+            <View style={styles.summaryBox}>
+              <Text style={styles.label}>✅ Submitted Log</Text>
+              {Object.entries(measurements).map(([k, v]) => (
+                <Text key={k} style={styles.summaryText}>
+                  {`${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`}
+                </Text>
+              ))}
+              <Text style={styles.summaryText}>Mood: {mood}/10</Text>
+              <Text style={styles.summaryText}>Energy: {energy}/10</Text>
+              {notes ? <Text style={styles.summaryText}>Notes: {notes}</Text> : null}
+            </View>
+  
+            <TouchableOpacity
+              style={[styles.button, { marginTop: 10 }]}
+              onPress={() => {
+                const next = new Date(date);
+                next.setDate(date.getDate() + 7);
+                setDate(next);
+                setMeasurements({ weight: '', arms: '', chest: '', waist: '', hips: '', thighs: '' });
+                setMood('');
+                setEnergy('');
+                setNotes('');
+                setSummary('');
+                setShowForm(true);
+                setIsEditing(false);
+                setEditingId(null);
+              }}
+            >
+              <Text style={styles.buttonText}>🗓️ Log for Next Week</Text>
+            </TouchableOpacity>
+          </>
+        )}
   
         {history.length > 1 && renderCharts()}
-        <View>
-  
-          <Text style={styles.section}>📚 Past Check-Ins</Text>
-          {history.map((entry, index) => {
-            const isExpanded = expandedLogs.includes(index);
-  
-            const toggleExpanded = () => {
-              if (isExpanded) {
-                setExpandedLogs(expandedLogs.filter((i) => i !== index));
-              } else {
-                setExpandedLogs([...expandedLogs, index]);
-              }
-            };
-  
-            return (
-              <TouchableOpacity
-                key={index}
-                onPress={toggleExpanded}
-                style={[styles.summaryBox, { padding: 12, marginBottom: 12 }]}
-                activeOpacity={0.9}
-              >
-                <Text style={[styles.label, { marginBottom: 6 }]}>
-                  📅 {new Date(entry.date).toDateString()}
-                </Text>
-  
-                {isExpanded && (
-                  <>
-                    {entry.measurements &&
-                      Object.entries(entry.measurements).map(([k, v]) => (
-                        <Text key={k} style={styles.summaryText}>
-                          {`${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`}
-                        </Text>
-                      ))}
-                    <Text style={styles.summaryText}>Mood: {entry.mood}/10</Text>
-                    <Text style={styles.summaryText}>Energy: {entry.energy}/10</Text>
-                    {entry.notes ? (
-                      <Text style={styles.summaryText}>Notes: {entry.notes}</Text>
-                    ) : null}
-  
-                    <View style={{ flexDirection: 'row', marginTop: 10, justifyContent: 'space-between' }}>
-                      <TouchableOpacity
-                        style={[styles.button, { flex: 1, marginRight: 5 }]}
-                        onPress={() => {
-                          setDate(new Date(entry.date));
-                          setMeasurements(entry.measurements);
-                          setMood(entry.mood);
-                          setEnergy(entry.energy);
-                          setNotes(entry.notes);
-                          setSummary('');
-                          setShowForm(true);
-                        }}
-                      >
-                        <Text style={styles.buttonText}>✏️ Edit</Text>
-                      </TouchableOpacity>
-  
-                      <TouchableOpacity
-                        style={[styles.button, { flex: 1, marginLeft: 5, backgroundColor: '#e74c3c' }]}
-                        onPress={() => {
-                          const newHistory = [...history];
-                          newHistory.splice(index, 1);
-                          setHistory(newHistory);
-                          setExpandedLogs(expandedLogs.filter((i) => i !== index));
-                        }}
-                      >
-                        <Text style={styles.buttonText}>🗑️ Delete</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-    </ScrollView>
-     </View>
+        {renderPastLogs()}
+      </ScrollView>
+    </View>
   );  
 }
-
-  

@@ -1,24 +1,33 @@
 // context/getCalorieBudget.tsx
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./AuthContext";
 
 export const getCalorieBudget = async (): Promise<number> => {
-  const user = auth.currentUser;
-  if (!user) return 3200; // Default if not logged in
-
   try {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
+    // Get current user from Supabase
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return 3200; // Default if not logged in
 
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      if (data.customMacroTargets && data.customMacroTargets.calories > 0) {
-        return data.customMacroTargets.calories;
-      }
-      if (data.macroTargets && data.macroTargets.calories > 0) {
-        return data.macroTargets.calories;
-      }
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('custom_macro_targets, macro_targets')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching calorie budget:", error);
+      return 3200;
     }
+
+    if (data?.custom_macro_targets?.calories > 0) {
+      return data.custom_macro_targets.calories;
+    }
+    
+    if (data?.macro_targets?.calories > 0) {
+      return data.macro_targets.calories;
+    }
+
     return 3200; // Default fallback
   } catch (err) {
     console.error("Error fetching calorie budget:", err);

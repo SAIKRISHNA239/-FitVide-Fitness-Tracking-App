@@ -1,44 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert,
   KeyboardAvoidingView, Platform, ScrollView
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../firebase';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
+import { useRouter } from 'expo-router';
+import { supabase } from '../lib/supabase';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { makeRedirectUri } from 'expo-auth-session';
 import Checkbox from 'expo-checkbox';
 
-WebBrowser.maybeCompleteAuthSession();
-
 export default function LoginScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-
-  const redirectUri = makeRedirectUri({ native: 'fitlog-app://' });
-
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: '743430946246-6kvv5ngjvu7o644ekmbin0nc4828ajd1.apps.googleusercontent.com',
-    redirectUri,
-  });
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential)
-        .then(() => navigation.navigate('index' as never))
-        .catch((error) => Alert.alert('Google Auth Error', error.message));
-    }
-  }, [response]);
+  const [loading, setLoading] = useState(false);
 
   const validatePassword = (pw: string) => {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/.test(pw);
@@ -61,17 +39,33 @@ export default function LoginScreen() {
       }
     }
 
+    setLoading(true);
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-        navigation.navigate('index' as never);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        // Navigation will be handled by AuthContext
+        router.replace('/');
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Account created! You can now log in.');
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        Alert.alert('Success', 'Account created! Please check your email to verify your account.');
         setIsLogin(true);
       }
     } catch (error: any) {
-      Alert.alert('Auth Error', error.message);
+      Alert.alert('Auth Error', error.message || 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,9 +84,30 @@ export default function LoginScreen() {
     });
 
     if (result.success) {
-      navigation.navigate('index' as never);
+      // Note: Biometric login with Supabase requires additional setup
+      // For now, this is a placeholder
+      Alert.alert('Info', 'Biometric login requires additional configuration with Supabase');
     } else {
       Alert.alert('Authentication failed');
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address first.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'fitlog-app://reset-password',
+      });
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Password reset email sent! Check your inbox.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send reset email');
     }
   };
 
@@ -111,6 +126,7 @@ export default function LoginScreen() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!loading}
         />
 
         <TextInput
@@ -120,6 +136,7 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
+          editable={!loading}
         />
 
         {!isLogin && (
@@ -130,6 +147,7 @@ export default function LoginScreen() {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={!showPassword}
+            editable={!loading}
           />
         )}
 
@@ -144,34 +162,29 @@ export default function LoginScreen() {
           <Text style={{ color: '#aaa', marginLeft: 8 }}>Remember Me</Text>
         </View>
 
-        <TouchableOpacity style={styles.addButton} onPress={handleAuth}>
-          <Text style={styles.addButtonText}>{isLogin ? 'Login' : 'Register'}</Text>
-        </TouchableOpacity>
-
-        <View style={styles.separatorContainer}>
-          <View style={styles.separatorLine} />
-          <Text style={styles.separatorText}>OR</Text>
-          <View style={styles.separatorLine} />
-        </View>
-
-        <TouchableOpacity style={styles.googleButton} disabled={!request} onPress={() => promptAsync()}>
-          <Text style={styles.addButtonText}>Continue with Google</Text>
+        <TouchableOpacity 
+          style={[styles.addButton, loading && styles.buttonDisabled]} 
+          onPress={handleAuth}
+          disabled={loading}
+        >
+          <Text style={styles.addButtonText}>{loading ? 'Loading...' : (isLogin ? 'Login' : 'Register')}</Text>
         </TouchableOpacity>
 
         {isLogin && (
-        <TouchableOpacity style={styles.googleButton} onPress={handleBiometricLogin}>
+          <TouchableOpacity style={styles.googleButton} onPress={handleBiometricLogin}>
             <Text style={styles.addButtonText}>Login with Biometrics</Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
         )}
 
-
-        <TouchableOpacity style={{ marginTop: 16, alignItems: 'center' }}>
-          <Text style={{ color: '#aaa' }}>Forgot Password?</Text>
-        </TouchableOpacity>
+        {isLogin && (
+          <TouchableOpacity style={{ marginTop: 16, alignItems: 'center' }} onPress={handleForgotPassword}>
+            <Text style={{ color: '#aaa' }}>Forgot Password?</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity onPress={() => setIsLogin(!isLogin)} style={{ marginTop: 20, alignItems: 'center' }}>
           <Text style={{ color: '#aaa' }}>
-            {isLogin ? 'Don’t have an account? Register' : 'Already have an account? Login'}
+            {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
           </Text>
         </TouchableOpacity>
 
@@ -186,12 +199,10 @@ const styles = StyleSheet.create({
   input: { backgroundColor: "#2C2C2C", color: "#fff", padding: 12, borderRadius: 10, marginBottom: 12 },
   addButton: { backgroundColor: "#6200EE", padding: 12, borderRadius: 10, alignItems: "center" },
   addButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  buttonDisabled: { opacity: 0.6 },
   container: { flex: 1, padding: 16, backgroundColor: "#121212" },
   appTitle: { fontSize: 32, fontWeight: 'bold', color: '#fff', textAlign: 'center', marginBottom: 4 },
   tagline: { fontSize: 16, color: '#aaa', textAlign: 'center', marginBottom: 24 },
   versionText: { textAlign: 'center', color: '#666', marginTop: 40, fontSize: 12 },
-  separatorContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
-  separatorLine: { flex: 1, height: 1, backgroundColor: '#333' },
-  separatorText: { color: '#aaa', marginHorizontal: 12 },
-  googleButton: { backgroundColor: '#4285F4', padding: 12, borderRadius: 10, alignItems: 'center' },
+  googleButton: { backgroundColor: '#4285F4', padding: 12, borderRadius: 10, alignItems: 'center', marginTop: 12 },
 });

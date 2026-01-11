@@ -7,8 +7,8 @@ import dayjs from "dayjs";
 import { useNutrition } from "../context/NutritionContext";
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { getCalorieBudget } from "../context/getCalorieBudget";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, auth } from "../firebase";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 const Index: React.FC = () => {
   const router = useRouter();
@@ -34,59 +34,46 @@ const Index: React.FC = () => {
     fetchBudget();
   }, []);
 
+  const { user } = useAuth();
+
   useEffect(() => {
     const loadWaterIntake = async () => {
-      const user = auth.currentUser;
       if (!user) return;
       
       try {
-        // Try to load from hydration history first (matches hydration.tsx structure)
-        const hydrationRef = doc(db, `users/${user.uid}/hydration/history`);
-        const hydrationSnap = await getDoc(hydrationRef);
-        if (hydrationSnap.exists()) {
-          const logs = hydrationSnap.data();
-          const todayLog = logs[todayKey];
-          if (todayLog?.amount) {
-            setWaterIntake(todayLog.amount);
-            return;
-          }
-        }
-        
-        // Fallback: try nutrition document
-        const nutritionRef = doc(db, "nutrition", user.uid);
-        const nutritionSnap = await getDoc(nutritionRef);
-        if (nutritionSnap.exists()) {
-          const nutritionData = nutritionSnap.data();
-          if (nutritionData.waterIntake) {
-            setWaterIntake(nutritionData.waterIntake);
-          }
+        // Load from hydration logs (if you have a hydration table)
+        // For now, we'll store it in profiles or a separate hydration table
+        // This is a placeholder - you may need to create a hydration table
+        const { data } = await supabase
+          .from('profiles')
+          .select('water_intake')
+          .eq('id', user.id)
+          .single();
+
+        if (data?.water_intake) {
+          setWaterIntake(data.water_intake);
         }
       } catch (error) {
         console.error("Error loading water intake:", error);
       }
     };
     
-    loadWaterIntake();
-  }, [todayKey]);
+    if (user) {
+      loadWaterIntake();
+    }
+  }, [todayKey, user]);
 
   const updateWaterIntake = async (newIntake: number) => {
-    const user = auth.currentUser;
     if (!user) return;
     
     setWaterIntake(newIntake);
     
     try {
-      // Save to hydration history (matches hydration.tsx structure)
-      const hydrationRef = doc(db, `users/${user.uid}/hydration/history`);
-      const hydrationSnap = await getDoc(hydrationRef);
-      const existing = hydrationSnap.exists() ? hydrationSnap.data() : {};
-      
-      const updated = {
-        ...existing,
-        [todayKey]: { amount: newIntake, creatine: existing[todayKey]?.creatine || false },
-      };
-      
-      await setDoc(hydrationRef, updated);
+      // Save to profiles table (or create a hydration table if needed)
+      await supabase
+        .from('profiles')
+        .update({ water_intake: newIntake })
+        .eq('id', user.id);
     } catch (error) {
       console.error("Error saving water intake:", error);
     }

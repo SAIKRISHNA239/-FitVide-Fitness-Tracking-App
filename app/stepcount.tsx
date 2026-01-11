@@ -1,52 +1,111 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, ScrollView } from "react-native";
-import { db } from "../firebase";
-import { collection, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 import dayjs from "dayjs";
 import Back from "./back";
 
 const StepCountScreen = () => {
+  const { user } = useAuth();
   const [todaySteps, setTodaySteps] = useState("");
   const [stepGoal, setStepGoal] = useState("10000");
   const [history, setHistory] = useState<{ date: string; steps: string }[]>([]);
   const todayDate = dayjs().format("YYYY-MM-DD");
 
   useEffect(() => {
-    const docRef = doc(db, "stepCounts", todayDate);
-    getDoc(docRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
+    if (user) {
+      loadTodaySteps();
+      loadHistory();
+    }
+  }, [user, todayDate]);
+
+  const loadTodaySteps = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('step_counts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', todayDate)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading steps:', error);
+        return;
+      }
+
+      if (data) {
         setTodaySteps(data.steps?.toString() || "0");
         setStepGoal(data.goal?.toString() || "10000");
       }
-    });
+    } catch (error) {
+      console.error('Error loading steps:', error);
+    }
+  };
 
-    const unsubscribe = onSnapshot(collection(db, "stepCounts"), (snapshot) => {
-      const logs: { date: string; steps: string }[] = [];
-      snapshot.forEach((doc) => {
-        logs.push({ date: doc.id, steps: doc.data().steps?.toString() || "0" });
-      });
-      const sorted = logs.sort((a, b) => (a.date > b.date ? -1 : 1));
-      setHistory(sorted);
-    });
+  const loadHistory = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('step_counts')
+        .select('date, steps')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .limit(30);
 
-    return () => unsubscribe();
-  }, []);
+      if (error) {
+        console.error('Error loading history:', error);
+        return;
+      }
+
+      if (data) {
+        const logs = data.map((item: any) => ({
+          date: item.date,
+          steps: item.steps?.toString() || "0",
+        }));
+        setHistory(logs);
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
+    }
+  };
 
   const saveSteps = async () => {
-    if (!todaySteps) return Alert.alert("Enter step count");
-    await setDoc(doc(db, "stepCounts", todayDate), {
-      steps: parseInt(todaySteps),
-      goal: parseInt(stepGoal),
-      date: todayDate,
-    });
-    Alert.alert("Saved", "Steps updated for today");
+    if (!user) return;
+    
+    if (!todaySteps) {
+      Alert.alert("Enter step count");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('step_counts')
+        .upsert({
+          user_id: user.id,
+          date: todayDate,
+          steps: parseInt(todaySteps),
+          goal: parseInt(stepGoal),
+        }, {
+          onConflict: 'user_id,date'
+        });
+
+      if (error) throw error;
+
+      Alert.alert("Saved", "Steps updated for today");
+      await loadHistory();
+    } catch (error: any) {
+      console.error('Error saving steps:', error);
+      Alert.alert("Error", error.message || "Failed to save steps");
+    }
   };
 
   return (
     <ScrollView style={darkStyles.container}>
       <Text style={darkStyles.header}>Step Count Tracker</Text>
-        <Back />
+      <Back />
 
       <Text style={darkStyles.label}>Today's Steps ({todayDate})</Text>
       <TextInput

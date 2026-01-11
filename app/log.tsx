@@ -1,4 +1,4 @@
-import React, { useEffect, useState ,useRef} from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -9,21 +9,18 @@ import {
   TextInput,
   Alert,
   Platform,
-  useColorScheme,
   ScrollView
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { db } from "../firebase"; // your firebase config file
-import { collection, getDocs, setDoc, doc, deleteDoc, query, where } from "firebase/firestore";
-import { useAuth } from "../context/AuthContext"; // to get current user
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import exerciseData from "../data/exercise.json";
 import { Ionicons } from "@expo/vector-icons";
 import Back from './back';
 import dayjs from "dayjs";
 import { useTheme } from "../context/ThemeContext";
-
 
 interface SetDetail {
   set: number;
@@ -43,13 +40,31 @@ interface ExerciseLog {
   intensity?: number;
 }
 
-
 interface ExerciseOption {
   name: string;
   equipment: string;
   level: string;
   focus: string;
   type: string;
+}
+
+// Supabase types for workouts with sets
+interface WorkoutWithSets {
+  id: string;
+  user_id: string;
+  date: string;
+  workout_name: string;
+  region: string | null;
+  level: string | null;
+  exercise_name: string;
+  tag: string | null;
+  intensity: number | null;
+  workout_sets: {
+    id: string;
+    set_order: number;
+    reps: number;
+    weight: number;
+  }[];
 }
 
 const LogScreen = () => {
@@ -66,81 +81,77 @@ const LogScreen = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [data, setData] = useState<any[]>([]);
-const [availableWorkouts, setAvailableWorkouts] = useState<string[]>([]);
-const [availableRegions, setAvailableRegions] = useState<string[]>([]);
-const [availableLevels, setAvailableLevels] = useState<string[]>([]);
-const [availableExercises, setAvailableExercises] = useState<string[]>([]);
-const [showAll, setShowAll] = useState(false);
-const [setInputs, setSetInputs] = useState<SetDetail[]>([]);
-const [sets, setSets] = useState<SetDetail[]>([]);
-const [intensity, setIntensity] = useState<number>(0);
-const [tag, setTag] = useState<string>("");
-const [tempRegion, setTempRegion] = useState('');
-const [tempLevel, setTempLevel] = useState('');
-const [tempExercise, setTempExercise] = useState('');
-const flatListRef = useRef<FlatList>(null);
-const { user } = useAuth();
+  const [availableWorkouts, setAvailableWorkouts] = useState<string[]>([]);
+  const [availableRegions, setAvailableRegions] = useState<string[]>([]);
+  const [availableLevels, setAvailableLevels] = useState<string[]>([]);
+  const [availableExercises, setAvailableExercises] = useState<string[]>([]);
+  const [setInputs, setSetInputs] = useState<SetDetail[]>([]);
+  const [intensity, setIntensity] = useState<number>(0);
+  const [tag, setTag] = useState<string>("");
+  const [tempRegion, setTempRegion] = useState('');
+  const [tempLevel, setTempLevel] = useState('');
+  const [tempExercise, setTempExercise] = useState('');
+  const flatListRef = useRef<FlatList>(null);
+  const { user } = useAuth();
 
-// Theme colors
-const colors = {
-  bg: isDarkMode ? "#121212" : "#ffffff",
-  text: isDarkMode ? "#ffffff" : "#000000",
-  subText: isDarkMode ? "#bbbbbb" : "#666666",
-  border: isDarkMode ? "#2c2c2c" : "#e0e0e0",
-  highlight: isDarkMode ? "#bb86fc" : "#6200EE",
-  card: isDarkMode ? "#1E1E1E" : "#f5f5f5",
-};
+  // Theme colors
+  const colors = {
+    bg: isDarkMode ? "#121212" : "#ffffff",
+    text: isDarkMode ? "#ffffff" : "#000000",
+    subText: isDarkMode ? "#bbbbbb" : "#666666",
+    border: isDarkMode ? "#2c2c2c" : "#e0e0e0",
+    highlight: isDarkMode ? "#bb86fc" : "#6200EE",
+    card: isDarkMode ? "#1E1E1E" : "#f5f5f5",
+  };
 
+  const changeDate = (days: number) => {
+    const current = dayjs(selectedDate).add(days, 'day');
+    setSelectedDate(current.format('YYYY-MM-DD'));
+  };
 
-const changeDate = (days: number) => {
-  const current = dayjs(selectedDate).add(days, 'day');
-  setSelectedDate(current.format('YYYY-MM-DD'));
-};
+  useEffect(() => {
+    setData(exerciseData);
+    const workouts = [...new Set(exerciseData.map((item) => item.workout))];
+    setAvailableWorkouts(workouts);
+  }, []);
 
-useEffect(() => {
-  setData(exerciseData);
-  const workouts = [...new Set(exerciseData.map((item) => item.workout))];
-  setAvailableWorkouts(workouts);
-}, []);
-
-useEffect(() => {
-  if (workout) {
-    const regions = data
-      .filter((item) => item.workout === workout)
-      .map((item) => item.region);
-    setAvailableRegions(regions);
-    setRegion("");
-    setLevel("");
-    setExercise("");
-  }
-}, [workout]);
-
-useEffect(() => {
-  if (workout && region) {
-    const selected = data.find(
-      (item) => item.workout === workout && item.region === region
-    );
-    if (selected) {
-      setAvailableLevels(Object.keys(selected.styles));
+  useEffect(() => {
+    if (workout) {
+      const regions = data
+        .filter((item) => item.workout === workout)
+        .map((item) => item.region);
+      setAvailableRegions(regions);
+      setRegion("");
       setLevel("");
       setExercise("");
     }
-  }
-}, [region]);
+  }, [workout]);
 
-useEffect(() => {
-  if (workout && region && level) {
-    const selected = data.find(
-      (item) => item.workout === workout && item.region === region
-    );
-    if (selected) {
-      const exerciseNames = selected.styles[level]?.map((ex: ExerciseOption) => ex.name) || [];
-      setAvailableExercises(exerciseNames);
-      setExercise("");
+  useEffect(() => {
+    if (workout && region) {
+      const selected = data.find(
+        (item) => item.workout === workout && item.region === region
+      );
+      if (selected) {
+        setAvailableLevels(Object.keys(selected.styles));
+        setLevel("");
+        setExercise("");
+      }
     }
-  }
-}, [level]);
+  }, [region]);
 
+  useEffect(() => {
+    if (workout && region && level) {
+      const selected = data.find(
+        (item) => item.workout === workout && item.region === region
+      );
+      if (selected) {
+        const exerciseNames = selected.styles[level]?.map((ex: ExerciseOption) => ex.name) || [];
+        setAvailableExercises(exerciseNames);
+        setExercise("");
+      }
+    }
+  }, [level]);
 
   useEffect(() => {
     loadLogs();
@@ -148,21 +159,18 @@ useEffect(() => {
 
   useEffect(() => {
     if (editId) {
-      // After setting workout, region options will be ready
       setRegion(tempRegion);
     }
   }, [availableRegions]);
   
   useEffect(() => {
     if (editId) {
-      // After setting region, level options will be ready
       setLevel(tempLevel);
     }
   }, [availableLevels]);
   
   useEffect(() => {
     if (editId) {
-      // After setting level, exercise options will be ready
       setExercise(tempExercise);
     }
   }, [availableExercises]);
@@ -174,71 +182,192 @@ useEffect(() => {
     setTempExercise('');
     setModalVisible(false);
   };
-  
 
+  // Load logs using efficient SQL query - only fetch workouts for selected date
+  // Use Supabase's relational syntax to fetch workouts with their sets in a single query
   const loadLogs = async () => {
-  if (!user) return;
-  try {
-    const userLogsRef = collection(db, "exerciseLogs", user.uid, "logs");
-    // Query only logs for the selected date
-    const q = query(userLogsRef, where("date", "==", selectedDate));
-    const snapshot = await getDocs(q);
-    const loadedLogs = snapshot.docs.map(doc => doc.data() as ExerciseLog);
-    setLogs(loadedLogs);
-  } catch (error) {
-    console.error("Error loading logs from Firestore:", error);
-  }
-};
+    if (!user) return;
+    try {
+      // Efficient query: Only fetch workouts WHERE date = selectedDate
+      // Use relational syntax to fetch workouts AND their sets in one query
+      const { data: workoutsData, error } = await supabase
+        .from('workouts')
+        .select(`
+          id,
+          date,
+          workout_name,
+          region,
+          level,
+          exercise_name,
+          tag,
+          intensity,
+          workout_sets (
+            id,
+            set_order,
+            reps,
+            weight
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('date', selectedDate)
+        .order('created_at', { ascending: false });
 
+      if (error) {
+        console.error("Error loading logs from Supabase:", error);
+        Alert.alert("Error", "Failed to load workouts");
+        return;
+      }
 
+      // Transform Supabase data to ExerciseLog format
+      const loadedLogs: ExerciseLog[] = (workoutsData as WorkoutWithSets[]).map((w) => ({
+        id: w.id,
+        date: w.date,
+        workout: w.workout_name,
+        region: w.region || '',
+        level: w.level || '',
+        exercise: w.exercise_name,
+        sets: w.workout_sets
+          .sort((a, b) => a.set_order - b.set_order)
+          .map((s, idx) => ({
+            set: idx + 1,
+            reps: s.reps,
+            weight: s.weight,
+          })),
+        tag: w.tag || undefined,
+        intensity: w.intensity || undefined,
+      }));
 
-  const handleSave = () => {
+      setLogs(loadedLogs);
+    } catch (error) {
+      console.error("Error loading logs:", error);
+      Alert.alert("Error", "Failed to load workouts");
+    }
+  };
+
+  const handleSave = async () => {
     if (!workout || !region || !level || !exercise || setInputs.length === 0) {
       Alert.alert("Please fill in all fields");
       return;
     }
 
-    const newLog: ExerciseLog = {
-      id: editId || Date.now().toString(),
-      date: selectedDate,
-      workout,
-      region,
-      level,
-      exercise,
-      sets: setInputs,
-      tag,
-      intensity,
-    };
-
-    let updatedLogs = [...logs];
-    const index = logs.findIndex((log) => log.id === newLog.id);
-    if (index >= 0) {
-      updatedLogs[index] = newLog;
-    } else {
-      updatedLogs.push(newLog);
+    if (!user) {
+      Alert.alert("Error", "User not authenticated");
+      return;
     }
 
-    setLogs(updatedLogs);
-    saveLogs([newLog]);
-    resetForm();
-  };
-  
-  const saveLogs = async (newLogs: ExerciseLog[]) => {
-    if (!user) return;
     try {
-      for (const log of newLogs) {
-        const logRef = doc(db, "exerciseLogs", user.uid, "logs", log.id);
-        await setDoc(logRef, log);
+      if (editId) {
+        // Update existing workout
+        await updateWorkout(editId);
+      } else {
+        // Create new workout
+        await createWorkout();
       }
+      
+      await loadLogs(); // Reload to get fresh data
+      resetForm();
     } catch (error) {
-      console.error("Error saving logs to Firestore:", error);
+      console.error("Error saving workout:", error);
+      Alert.alert("Error", "Failed to save workout");
     }
   };
 
+  const createWorkout = async () => {
+    if (!user) return;
+
+    // Insert workout first
+    const { data: workoutData, error: workoutError } = await supabase
+      .from('workouts')
+      .insert({
+        user_id: user.id,
+        date: selectedDate,
+        workout_name: workout,
+        region: region,
+        level: level,
+        exercise_name: exercise,
+        tag: tag || null,
+        intensity: intensity || null,
+      })
+      .select()
+      .single();
+
+    if (workoutError) {
+      throw workoutError;
+    }
+
+    // Insert sets
+    if (workoutData && setInputs.length > 0) {
+      const setsToInsert = setInputs.map((set, idx) => ({
+        workout_id: workoutData.id,
+        set_order: idx + 1,
+        reps: set.reps,
+        weight: set.weight,
+      }));
+
+      const { error: setsError } = await supabase
+        .from('workout_sets')
+        .insert(setsToInsert);
+
+      if (setsError) {
+        // Rollback: delete the workout if sets insertion fails
+        await supabase.from('workouts').delete().eq('id', workoutData.id);
+        throw setsError;
+      }
+    }
+  };
+
+  const updateWorkout = async (workoutId: string) => {
+    if (!user) return;
+
+    // Update workout
+    const { error: workoutError } = await supabase
+      .from('workouts')
+      .update({
+        date: selectedDate,
+        workout_name: workout,
+        region: region,
+        level: level,
+        exercise_name: exercise,
+        tag: tag || null,
+        intensity: intensity || null,
+      })
+      .eq('id', workoutId)
+      .eq('user_id', user.id);
+
+    if (workoutError) {
+      throw workoutError;
+    }
+
+    // Delete existing sets
+    const { error: deleteError } = await supabase
+      .from('workout_sets')
+      .delete()
+      .eq('workout_id', workoutId);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    // Insert new sets
+    if (setInputs.length > 0) {
+      const setsToInsert = setInputs.map((set, idx) => ({
+        workout_id: workoutId,
+        set_order: idx + 1,
+        reps: set.reps,
+        weight: set.weight,
+      }));
+
+      const { error: setsError } = await supabase
+        .from('workout_sets')
+        .insert(setsToInsert);
+
+      if (setsError) {
+        throw setsError;
+      }
+    }
+  };
 
   const handleEdit = (log: ExerciseLog) => {
-    console.log("Editing log:", log); 
-  
     setSelectedDate(log.date);
     setWorkout(log.workout || "");
     setTempRegion(log.region || "");
@@ -247,10 +376,9 @@ useEffect(() => {
     setSetInputs(log.sets || []);
     setTag(log.tag || "");
     setIntensity(log.intensity || 0);
-    setEditId(log.id); // to indicate we're editing
+    setEditId(log.id);
     setModalVisible(true);
   };
-  
 
   const handleDelete = (id: string) => {
     Alert.alert("Confirm Delete", "Are you sure you want to delete this log?", [
@@ -261,10 +389,22 @@ useEffect(() => {
         onPress: async () => {
           if (!user) return;
           try {
-            await deleteDoc(doc(db, "exerciseLogs", user.uid, "logs", id));
-            setLogs(logs.filter((log) => log.id !== id));
+            // Delete workout (sets will be cascade deleted)
+            const { error } = await supabase
+              .from('workouts')
+              .delete()
+              .eq('id', id)
+              .eq('user_id', user.id);
+
+            if (error) {
+              throw error;
+            }
+
+            // Reload logs
+            await loadLogs();
           } catch (error) {
             console.error("Error deleting log:", error);
+            Alert.alert("Error", "Failed to delete workout");
           }
         },
       },
@@ -276,7 +416,6 @@ useEffect(() => {
     setRegion("");
     setLevel("");
     setExercise("");
-    setSets([]);
     setSetInputs([]);
     setTag("");
     setIntensity(0);
@@ -359,133 +498,133 @@ useEffect(() => {
   
       {/* Modal */}
       <Modal visible={modalVisible} animationType="slide">
-  <View style={[styles.modalContainer, { backgroundColor: colors.bg }]}>
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={[styles.datePicker, { backgroundColor: colors.card }]}>
-        <Text style={[styles.text, { color: colors.text }]}>📅 {selectedDate}</Text>
-      </TouchableOpacity>
+        <View style={[styles.modalContainer, { backgroundColor: colors.bg }]}>
+          <ScrollView contentContainerStyle={styles.scrollViewContent}>
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={[styles.datePicker, { backgroundColor: colors.card }]}>
+              <Text style={[styles.text, { color: colors.text }]}>📅 {selectedDate}</Text>
+            </TouchableOpacity>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={dayjs(selectedDate).toDate()}
-          mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={handleDateChange}
-        />
-      )}
-
-      {/* Dropdowns */}
-      <View style={[styles.picker, { backgroundColor: colors.card }]}>
-        <Picker selectedValue={workout} onValueChange={setWorkout} dropdownIconColor={colors.text}>
-          <Picker.Item label="Select Workout" value="" color={colors.text} />
-          {availableWorkouts.map((item) => (
-            <Picker.Item key={item} label={item} value={item} color={colors.text} />
-          ))}
-        </Picker>
-      </View>
-
-      <View style={[styles.picker, { backgroundColor: colors.card }]}>
-        <Picker selectedValue={region} onValueChange={setRegion} enabled={!!workout} dropdownIconColor={colors.text}>
-          <Picker.Item label="Select Region" value="" color={colors.text} />
-          {availableRegions.map((item) => (
-            <Picker.Item key={item} label={item} value={item} color={colors.text} />
-          ))}
-        </Picker>
-      </View>
-
-      <View style={[styles.picker, { backgroundColor: colors.card }]}>
-        <Picker selectedValue={level} onValueChange={setLevel} enabled={!!region} dropdownIconColor={colors.text}>
-          <Picker.Item label="Select Level" value="" color={colors.text} />
-          {availableLevels.map((item) => (
-            <Picker.Item key={item} label={item} value={item} color={colors.text} />
-          ))}
-        </Picker>
-      </View>
-
-      <View style={[styles.picker, { backgroundColor: colors.card }]}>
-        <Picker selectedValue={exercise} onValueChange={setExercise} enabled={!!level} dropdownIconColor={colors.text}>
-          <Picker.Item label="Select Exercise" value="" color={colors.text} />
-          {availableExercises.map((item) => (
-            <Picker.Item key={item} label={item} value={item} color={colors.text} />
-          ))}
-        </Picker>
-      </View>
-
-      {/* Sets */}
-      <View style={{ marginBottom: 12 }}>
-        {setInputs.map((setItem, index) => (
-          <View key={index} style={{ marginBottom: 8 }}>
-            <Text style={[styles.text, { color: colors.text }]}>Set {setItem.set}</Text>
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <TextInput
-                style={[styles.input, { flex: 1, backgroundColor: colors.card, color: colors.text }]}
-                placeholder="Reps"
-                placeholderTextColor={colors.subText}
-                keyboardType="numeric"
-                value={setItem.reps.toString()}
-                onChangeText={(text) => {
-                  const updated = [...setInputs];
-                  updated[index].reps = parseInt(text) || 0;
-                  setSetInputs(updated);
-                }}
+            {showDatePicker && (
+              <DateTimePicker
+                value={dayjs(selectedDate).toDate()}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={handleDateChange}
               />
-              <TextInput
-                style={[styles.input, { flex: 1, backgroundColor: colors.card, color: colors.text }]}
-                placeholder="Weight"
-                placeholderTextColor={colors.subText}
-                keyboardType="numeric"
-                value={setItem.weight.toString()}
-                onChangeText={(text) => {
-                  const updated = [...setInputs];
-                  updated[index].weight = parseFloat(text) || 0;
-                  setSetInputs(updated);
-                }}
-              />
+            )}
+
+            {/* Dropdowns */}
+            <View style={[styles.picker, { backgroundColor: colors.card }]}>
+              <Picker selectedValue={workout} onValueChange={setWorkout} dropdownIconColor={colors.text}>
+                <Picker.Item label="Select Workout" value="" color={colors.text} />
+                {availableWorkouts.map((item) => (
+                  <Picker.Item key={item} label={item} value={item} color={colors.text} />
+                ))}
+              </Picker>
             </View>
-          </View>
-        ))}
-        <TouchableOpacity
-          onPress={() => setSetInputs(prev => [...prev, { set: prev.length + 1, reps: 0, weight: 0 }])}
-          style={[styles.addButton, { marginTop: 8, backgroundColor: colors.highlight }]}
-        >
-          <Text style={styles.addButtonText}>+ Add Set</Text>
-        </TouchableOpacity>
-      </View>
 
-      {/* Tag + Intensity */}
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-        placeholder="Tag (e.g., PR, Light Day)"
-        placeholderTextColor={colors.subText}
-        value={tag}
-        onChangeText={setTag}
-      />
+            <View style={[styles.picker, { backgroundColor: colors.card }]}>
+              <Picker selectedValue={region} onValueChange={setRegion} enabled={!!workout} dropdownIconColor={colors.text}>
+                <Picker.Item label="Select Region" value="" color={colors.text} />
+                {availableRegions.map((item) => (
+                  <Picker.Item key={item} label={item} value={item} color={colors.text} />
+                ))}
+              </Picker>
+            </View>
 
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-        <Text style={[styles.text, { marginRight: 8, color: colors.text }]}>Intensity:</Text>
-        {[1, 2, 3, 4, 5].map((value) => (
-          <TouchableOpacity key={value} onPress={() => setIntensity(value)}>
-            <Text style={{ fontSize: 24 }}>{value <= intensity ? "⭐" : "☆"}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            <View style={[styles.picker, { backgroundColor: colors.card }]}>
+              <Picker selectedValue={level} onValueChange={setLevel} enabled={!!region} dropdownIconColor={colors.text}>
+                <Picker.Item label="Select Level" value="" color={colors.text} />
+                {availableLevels.map((item) => (
+                  <Picker.Item key={item} label={item} value={item} color={colors.text} />
+                ))}
+              </Picker>
+            </View>
 
-      {/* Save + Cancel */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <TouchableOpacity onPress={resetForm} style={[styles.addButton, { backgroundColor: "#aaa" }]}>
-          <Text style={styles.addButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleSave} style={[styles.addButton, { backgroundColor: "#4CAF50" }]}>
-          <Text style={styles.addButtonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  </View>
-</Modal>
+            <View style={[styles.picker, { backgroundColor: colors.card }]}>
+              <Picker selectedValue={exercise} onValueChange={setExercise} enabled={!!level} dropdownIconColor={colors.text}>
+                <Picker.Item label="Select Exercise" value="" color={colors.text} />
+                {availableExercises.map((item) => (
+                  <Picker.Item key={item} label={item} value={item} color={colors.text} />
+                ))}
+              </Picker>
+            </View>
 
+            {/* Sets */}
+            <View style={{ marginBottom: 12 }}>
+              {setInputs.map((setItem, index) => (
+                <View key={index} style={{ marginBottom: 8 }}>
+                  <Text style={[styles.text, { color: colors.text }]}>Set {setItem.set}</Text>
+                  <View style={{ flexDirection: "row", gap: 10 }}>
+                    <TextInput
+                      style={[styles.input, { flex: 1, backgroundColor: colors.card, color: colors.text }]}
+                      placeholder="Reps"
+                      placeholderTextColor={colors.subText}
+                      keyboardType="numeric"
+                      value={setItem.reps.toString()}
+                      onChangeText={(text) => {
+                        const updated = [...setInputs];
+                        updated[index].reps = parseInt(text) || 0;
+                        setSetInputs(updated);
+                      }}
+                    />
+                    <TextInput
+                      style={[styles.input, { flex: 1, backgroundColor: colors.card, color: colors.text }]}
+                      placeholder="Weight"
+                      placeholderTextColor={colors.subText}
+                      keyboardType="numeric"
+                      value={setItem.weight.toString()}
+                      onChangeText={(text) => {
+                        const updated = [...setInputs];
+                        updated[index].weight = parseFloat(text) || 0;
+                        setSetInputs(updated);
+                      }}
+                    />
+                  </View>
+                </View>
+              ))}
+              <TouchableOpacity
+                onPress={() => setSetInputs(prev => [...prev, { set: prev.length + 1, reps: 0, weight: 0 }])}
+                style={[styles.addButton, { marginTop: 8, backgroundColor: colors.highlight }]}
+              >
+                <Text style={styles.addButtonText}>+ Add Set</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Tag + Intensity */}
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+              placeholder="Tag (e.g., PR, Light Day)"
+              placeholderTextColor={colors.subText}
+              value={tag}
+              onChangeText={setTag}
+            />
+
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+              <Text style={[styles.text, { marginRight: 8, color: colors.text }]}>Intensity:</Text>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <TouchableOpacity key={value} onPress={() => setIntensity(value)}>
+                  <Text style={{ fontSize: 24 }}>{value <= intensity ? "⭐" : "☆"}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Save + Cancel */}
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <TouchableOpacity onPress={resetForm} style={[styles.addButton, { backgroundColor: "#aaa" }]}>
+                <Text style={styles.addButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSave} style={[styles.addButton, { backgroundColor: "#4CAF50" }]}>
+                <Text style={styles.addButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 };
+
 export default LogScreen;
 
 const styles = StyleSheet.create({

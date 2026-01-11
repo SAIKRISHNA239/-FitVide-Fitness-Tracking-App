@@ -13,8 +13,8 @@ import {
   Platform
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, auth } from "../firebase";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 import foodDatabase from "../data/foodDatabase.json";
 import { useTheme } from "../context/ThemeContext";
 import { Ionicons, Feather } from "@expo/vector-icons";
@@ -33,6 +33,7 @@ export default function MealsScreen() {
   const router = useRouter();
   const mealName = Array.isArray(meal) ? meal[0] : (meal || "");
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
 
   const colors = {
     background: "#121212",
@@ -133,36 +134,71 @@ export default function MealsScreen() {
   const todayKey = dayjs().format('YYYY-MM-DD');
 
   const handleAddToMeal = async () => {
-  if (!selectedFood || !quantity) return;
-  const qty = parseFloat(quantity);
-  if (isNaN(qty) || qty <= 0) return Alert.alert("Enter a valid quantity");
+    if (!selectedFood || !quantity || !user) return;
+    const qty = parseFloat(quantity);
+    if (isNaN(qty) || qty <= 0) return Alert.alert("Enter a valid quantity");
 
-  const factor = qty / selectedFood.serving_size;
-  const entry = {
-    ...selectedFood,
-    quantity: qty,
-    calories: +(selectedFood.calories * factor).toFixed(1),
-    protein: +(selectedFood.protein * factor).toFixed(1),
-    carbs: +(selectedFood.carbs * factor).toFixed(1),
-    fats: +(selectedFood.fats * factor).toFixed(1),
-    fiber: +(selectedFood.fiber * factor).toFixed(1)
+    const factor = qty / selectedFood.serving_size;
+    const entry = {
+      name: selectedFood.name,
+      quantity: qty,
+      serving_size: selectedFood.serving_size,
+      serving_unit: selectedFood.serving_unit,
+      calories: +(selectedFood.calories * factor).toFixed(1),
+      protein: +(selectedFood.protein * factor).toFixed(1),
+      carbs: +(selectedFood.carbs * factor).toFixed(1),
+      fats: +(selectedFood.fats * factor).toFixed(1),
+      fiber: +(selectedFood.fiber * factor).toFixed(1)
+    };
+
+    try {
+      // Check if meal exists for today
+      const { data: existingMeal } = await supabase
+        .from('meals')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('date', todayKey)
+        .eq('meal_type', mealName)
+        .single();
+
+      let mealId: string;
+
+      if (existingMeal) {
+        mealId = existingMeal.id;
+      } else {
+        // Create new meal
+        const { data: newMeal, error: mealError } = await supabase
+          .from('meals')
+          .insert({
+            user_id: user.id,
+            date: todayKey,
+            meal_type: mealName,
+          })
+          .select()
+          .single();
+
+        if (mealError) throw mealError;
+        mealId = newMeal.id;
+      }
+
+      // Add meal item
+      const { error: itemError } = await supabase
+        .from('meal_items')
+        .insert({
+          meal_id: mealId,
+          ...entry,
+        });
+
+      if (itemError) throw itemError;
+
+      setSelectedFood(null);
+      setQuantity("");
+      Alert.alert("Success", `${entry.name} added to ${mealName}`);
+    } catch (error: any) {
+      console.error("Error adding meal:", error);
+      Alert.alert("Error", error.message || "Failed to add food item");
+    }
   };
-
-  const user = auth.currentUser;
-  if (!user) return Alert.alert("User not logged in");
-
-  const docRef = doc(db, "meals", `${user.uid}_${todayKey}`);
-  const docSnap = await getDoc(docRef);
-  let log = docSnap.exists() ? docSnap.data() : {};
-
-  if (!log[mealName]) log[mealName] = [];
-  log[mealName].push(entry);
-  await setDoc(docRef, log);
-
-  setSelectedFood(null);
-  setQuantity("");
-  Alert.alert("Success", `${entry.name} added to ${mealName}`);
-};
 
   const filteredFoods = foodDatabase.filter((item) => {
     const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase());

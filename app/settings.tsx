@@ -8,6 +8,7 @@ import {
   Alert,
   Linking,
   Image,
+  Platform,
 } from "react-native";
 import { useTheme } from "../context/ThemeContext";
 import { useRouter } from "expo-router";
@@ -16,18 +17,15 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import jsPDF from 'jspdf';
-import { auth, db, storage } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 export default function SettingsScreen() {
-  const { logout } = useAuth(); // Get logout function from context
+  const { logout, user } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
   const router = useRouter();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [name, setName] = useState("Loading...");
-  const uid = auth.currentUser?.uid;
 
   const colors = {
     background: "#121212",
@@ -39,33 +37,115 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const loadProfile = async () => {
-      if (!uid) return;
-      const docRef = doc(db, 'users', uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setProfileImage(data.photoURL || null);
-        setName(data.name || "No name");
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('photo_url, name')
+          .eq('id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading profile:', error);
+          return;
+        }
+
+        if (data) {
+          setProfileImage(data.photo_url || null);
+          setName(data.name || user.email?.split('@')[0] || "User");
+        } else {
+          setName(user.email?.split('@')[0] || "User");
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        setName(user.email?.split('@')[0] || "User");
       }
     };
-    loadProfile();
-  }, []);
+    
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
-    if (!result.canceled && result.assets?.[0]?.uri) {
-      const uri = result.assets[0].uri;
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const storageRef = ref(storage, `profileImages/${uid}.jpg`);
-      await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(storageRef);
-      if (!uid) {
-        console.error("User ID is undefined. Cannot update photoURL.");
+    if (!user) return;
+    
+    try {
+      // Request permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please grant permission to access your photos.');
         return;
       }
-      await setDoc(doc(db, 'users', uid), { photoURL: downloadURL }, { merge: true });
-      setProfileImage(downloadURL);
+
+      const result = await ImagePicker.launchImageLibraryAsync({ 
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, 
+        quality: 0.8,
+        allowsEditing: true,
+        aspect: [1, 1],
+      });
+      
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        const uri = result.assets[0].uri;
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        
+        // Upload to Supabase Storage
+        const fileExt = uri.split('.').pop() || 'jpg';
+        const fileName = `${user.id}.${fileExt}`;
+        const filePath = `profile-images/${fileName}`;
+
+        // Check if storage bucket exists, if not, create it or use a fallback
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, blob, {
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (uploadError) {
+          // If bucket doesn't exist, try 'profile_images' or show helpful error
+          if (uploadError.message?.includes('Bucket') || uploadError.message?.includes('not found')) {
+            Alert.alert(
+              'Storage Error', 
+              'Storage bucket not configured. Please create an "avatars" bucket in Supabase Storage, or update the bucket name in settings.tsx'
+            );
+            return;
+          }
+          throw uploadError;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        // Update profile
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ photo_url: publicUrl })
+          .eq('id', user.id);
+
+        if (updateError) {
+          // If profile doesn't exist, create it
+          if (updateError.code === 'PGRST116' || updateError.message?.includes('No rows')) {
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({ id: user.id, photo_url: publicUrl });
+            
+            if (insertError) throw insertError;
+          } else {
+            throw updateError;
+          }
+        }
+
+        setProfileImage(publicUrl);
+        Alert.alert('Success', 'Profile image updated!');
+      }
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', error.message || 'Failed to upload image. Please try again.');
     }
   };
 
@@ -74,14 +154,23 @@ export default function SettingsScreen() {
       const doc = new jsPDF();
       doc.text("FitVide - User Summary", 20, 20);
       doc.text(`Name: ${name}`, 20, 40);
-      doc.text(`Email: ${auth.currentUser?.email || 'N/A'}`, 20, 50);
+      doc.text(`Email: ${user?.email || 'N/A'}`, 20, 50);
       doc.text("Exported from FitVide", 20, 70);
 
-      const pdfUri = FileSystem.documentDirectory + 'fitvide_summary.pdf';
-      await FileSystem.writeAsStringAsync(pdfUri, doc.output(), { encoding: FileSystem.EncodingType.UTF8 });
-      await Sharing.shareAsync(pdfUri);
-    } catch (error) {
+      // Check if we're on web or native
+      if (Platform.OS === 'web') {
+        // For web, download directly
+        doc.save('fitvide_summary.pdf');
+        Alert.alert("Success", "PDF downloaded successfully!");
+      } else {
+        // For native, use FileSystem and Sharing
+        const pdfUri = FileSystem.documentDirectory + 'fitvide_summary.pdf';
+        await FileSystem.writeAsStringAsync(pdfUri, doc.output(), { encoding: FileSystem.EncodingType.UTF8 });
+        await Sharing.shareAsync(pdfUri);
+      }
+    } catch (error: any) {
       console.error('Error exporting PDF:', error);
+      Alert.alert("Error", error.message || "Failed to export PDF");
     }
   };
 
@@ -107,7 +196,7 @@ export default function SettingsScreen() {
           )}
         </TouchableOpacity>
         <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
-        <Text style={[styles.username, { color: colors.subText }]}>@lucasscott3</Text>
+        <Text style={[styles.username, { color: colors.subText }]}>@{name.toLowerCase().replace(/\s/g, '')}</Text>
       </View>
 
       <ScrollView style={styles.settingsList} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
@@ -124,10 +213,13 @@ export default function SettingsScreen() {
                   exportAsPDF();
                   break;
                 case "Privacy & Security":
-                  router.push("/privacy-security");
+                  Alert.alert("Privacy & Security", "This feature is coming soon!");
                   break;
                 case "Reset Options":
-                  router.push("/reset-options");
+                  Alert.alert("Reset Options", "This feature is coming soon!");
+                  break;
+                case "Notifications":
+                  Alert.alert("Notifications", "This feature is coming soon!");
                   break;
                 case "Logout":
                   Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -135,9 +227,14 @@ export default function SettingsScreen() {
                     {
                       text: "Logout",
                       style: "destructive",
-                      onPress: () => {
-                        logout(); // Call the logout function
-                        router.replace("/"); // This will trigger the auth check in _layout.tsx
+                      onPress: async () => {
+                        try {
+                          await logout();
+                          // Navigation will be handled automatically by _layout.tsx
+                          // when user becomes null
+                        } catch (error: any) {
+                          Alert.alert("Error", error.message || "Failed to logout");
+                        }
                       },
                     },
                   ]);
