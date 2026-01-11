@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![FitVide Logo](./assets/images/fitVide%20logo%202.png)
+![FitVide Logo](./assets/images/fitVide.png)
 
 **A comprehensive, cross-platform fitness and wellness tracking application**
 
