@@ -1,14 +1,17 @@
 // context/AuthContext.tsx
-// Refactored for Supabase Auth
+// Refactored for Supabase Auth with Google OAuth
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import * as AuthSession from 'expo-auth-session';
+import { Platform } from 'react-native';
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   logout: async () => {},
   deleteAccount: async () => {},
+  signInWithGoogle: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -52,41 +56,86 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      // Generate redirect URL based on platform
+      let redirectTo: string;
+      
+      if (Platform.OS === 'web') {
+        // For web, use the current origin
+        if (typeof window !== 'undefined') {
+          redirectTo = `${window.location.origin}/auth/callback`;
+        } else {
+          // Fallback for SSR
+          redirectTo = AuthSession.makeRedirectUri({
+            scheme: 'fitvide',
+            path: 'auth/callback',
+          });
+        }
+      } else {
+        // For mobile, use expo-auth-session to generate redirect URI
+        const redirectUri = AuthSession.makeRedirectUri({
+          scheme: 'fitvide',
+          path: 'auth/callback',
+        });
+        redirectTo = redirectUri;
+      }
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      // On mobile, the OAuth flow will complete via deep link
+      // On web, it will redirect to the callback URL
+      // The session will be handled by onAuthStateChange
+    } catch (error: any) {
+      console.error('Google Sign-In Error:', error);
+      throw error;
+    }
+  };
+
   const deleteAccount = async () => {
     try {
-      // Note: User deletion from auth.users requires Admin API
-      // For client-side, we'll delete all user data and then sign out
-      // The actual auth.users deletion should be done via backend/edge function
-      
       if (!user) {
         throw new Error('No user logged in');
       }
 
-      // All data will be cascade deleted when user is deleted from auth.users
-      // For now, we sign out - actual user deletion requires Admin API
-      // In production, create an Edge Function to handle this securely
-      
+      // Call the RPC function to delete user account
+      const { error } = await supabase.rpc('delete_user');
+
+      if (error) {
+        console.error('Error deleting account:', error);
+        
+        // Handle authentication errors
+        if (error.message?.includes('authentication') || error.code === 'PGRST301') {
+          throw new Error('Please log out and log back in to delete your account.');
+        }
+        
+        throw error;
+      }
+
+      // Sign out after successful deletion
+      // The user will be automatically removed from auth.users
+      // All related data will be cascade deleted
       await supabase.auth.signOut();
-      
-      // Note: To fully delete the user account, you need to:
-      // 1. Create a Supabase Edge Function that uses service role key
-      // 2. Call supabase.auth.admin.deleteUser(user.id) in that function
-      // 3. Call that Edge Function from here
-      
+      setUser(null);
     } catch (error: any) {
       console.error('Delete Account Error:', error);
-      
-      // Handle requires-recent-login equivalent
-      if (error?.message?.includes('authentication') || error?.code === 'PGRST301') {
-        throw new Error('Please log out and log back in to delete your account.');
-      }
-      
       throw error;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, deleteAccount }}>
+    <AuthContext.Provider value={{ user, loading, logout, deleteAccount, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

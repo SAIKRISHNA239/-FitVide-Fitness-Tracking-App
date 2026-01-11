@@ -41,17 +41,25 @@ const Index: React.FC = () => {
       if (!user) return;
       
       try {
-        // Load from hydration logs (if you have a hydration table)
-        // For now, we'll store it in profiles or a separate hydration table
-        // This is a placeholder - you may need to create a hydration table
-        const { data } = await supabase
-          .from('profiles')
+        // Load from daily_logs table for today's date
+        const { data, error } = await supabase
+          .from('daily_logs')
           .select('water_intake')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
+          .eq('date', todayKey)
           .single();
 
-        if (data?.water_intake) {
+        if (error && error.code !== 'PGRST116') {
+          // PGRST116 means no rows found, which is fine
+          console.error("Error loading water intake:", error);
+          return;
+        }
+
+        if (data?.water_intake !== undefined && data.water_intake !== null) {
           setWaterIntake(data.water_intake);
+        } else {
+          // No log exists for today, default to 0
+          setWaterIntake(0);
         }
       } catch (error) {
         console.error("Error loading water intake:", error);
@@ -69,11 +77,32 @@ const Index: React.FC = () => {
     setWaterIntake(newIntake);
     
     try {
-      // Save to profiles table (or create a hydration table if needed)
-      await supabase
-        .from('profiles')
-        .update({ water_intake: newIntake })
-        .eq('id', user.id);
+      // Use upsert to create or update daily_logs entry
+      // This ensures we don't overwrite other fields like weight, sleep, mood
+      const { error } = await supabase
+        .from('daily_logs')
+        .upsert({
+          user_id: user.id,
+          date: todayKey,
+          water_intake: newIntake,
+        }, {
+          onConflict: 'user_id,date',
+        });
+
+      if (error) {
+        console.error("Error saving water intake:", error);
+        // Revert state on error
+        const { data } = await supabase
+          .from('daily_logs')
+          .select('water_intake')
+          .eq('user_id', user.id)
+          .eq('date', todayKey)
+          .single();
+        
+        if (data?.water_intake !== undefined) {
+          setWaterIntake(data.water_intake);
+        }
+      }
     } catch (error) {
       console.error("Error saving water intake:", error);
     }
@@ -192,14 +221,34 @@ const Index: React.FC = () => {
 
         {/* Water Intake */}
         <View style={styles.waterSection}>
-          <Text style={[styles.waterLabel, { color: colors.text }]}>Water intake</Text>
-          <View style={[styles.waterBarContainer, { backgroundColor: colors.border }]}>
-            <View style={{ width: `${(waterIntake / waterGoal) * 100}%`, backgroundColor: colors.highlight }} />
-            <View style={{ flex: 1 }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={[styles.waterLabel, { color: colors.text }]}>Water intake</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                onPress={() => updateWaterIntake(Math.max(0, waterIntake - 250))}
+                style={[styles.waterButton, { backgroundColor: colors.border }]}
+              >
+                <Text style={{ color: colors.text, fontSize: 16 }}>-250ml</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => updateWaterIntake(waterIntake + 250)}
+                style={[styles.waterButton, { backgroundColor: colors.highlight }]}
+              >
+                <Text style={{ color: '#fff', fontSize: 16 }}>+250ml</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text style={[styles.waterSub, { color: colors.highlight }]}>
-            {Math.max(waterGoal - waterIntake, 0)} ml left
-          </Text>
+          <View style={[styles.waterBarContainer, { backgroundColor: colors.border }]}>
+            <View style={{ width: `${Math.min((waterIntake / waterGoal) * 100, 100)}%`, backgroundColor: colors.highlight, height: '100%' }} />
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+            <Text style={[styles.waterSub, { color: colors.highlight }]}>
+              {waterIntake}ml / {waterGoal}ml
+            </Text>
+            <Text style={[styles.waterSub, { color: colors.subText }]}>
+              {Math.max(waterGoal - waterIntake, 0)} ml left
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -243,9 +292,10 @@ const styles = StyleSheet.create({
   circleBottom: { fontSize: 14, marginTop: 4 },
   mealInfo: { flex: 1, justifyContent: 'center', gap: 8 },
   waterSection: { marginTop: 20 },
-  waterLabel: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
-  waterBarContainer: { height: 10, width: '100%', borderRadius: 6, flexDirection: 'row', overflow: 'hidden' },
-  waterSub: { marginTop: 6, fontSize: 14, fontWeight: '500' },
+  waterLabel: { fontSize: 18, fontWeight: '600' },
+  waterBarContainer: { height: 10, width: '100%', borderRadius: 6, overflow: 'hidden' },
+  waterSub: { fontSize: 14, fontWeight: '500' },
+  waterButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 },
   navBar: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12, borderTopWidth: 1 },
   navButton: { alignItems: 'center' },
   navText: { fontSize: 12, marginTop: 4 },

@@ -5,11 +5,14 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,6 +20,7 @@ export default function LoginScreen() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
 
   const validatePassword = (pw: string) => {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/.test(pw);
@@ -69,26 +73,66 @@ export default function LoginScreen() {
     }
   };
 
-  const handleBiometricLogin = async () => {
-    const hasHardware = await LocalAuthentication.hasHardwareAsync();
-    const supported = await LocalAuthentication.supportedAuthenticationTypesAsync();
-    const enrolled = await LocalAuthentication.isEnrolledAsync();
-
-    if (!hasHardware || supported.length === 0 || !enrolled) {
-      Alert.alert('Biometric Login not supported');
-      return;
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      // Navigation will be handled by AuthContext when session is established
+    } catch (error: any) {
+      Alert.alert('Google Sign-In Error', error.message || 'Failed to sign in with Google');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Login with Biometrics',
-    });
+  const handleBiometricLogin = async () => {
+    setBiometricLoading(true);
+    try {
+      // Check if biometrics are available
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const supported = await LocalAuthentication.supportedAuthenticationTypesAsync();
+      const enrolled = await LocalAuthentication.isEnrolledAsync();
 
-    if (result.success) {
-      // Note: Biometric login with Supabase requires additional setup
-      // For now, this is a placeholder
-      Alert.alert('Info', 'Biometric login requires additional configuration with Supabase');
-    } else {
-      Alert.alert('Authentication failed');
+      if (!hasHardware || supported.length === 0 || !enrolled) {
+        Alert.alert(
+          'Biometric Login Unavailable',
+          'Biometric authentication is not available on this device. Please use email/password or Google sign-in.'
+        );
+        return;
+      }
+
+      // Authenticate with biometrics
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Authenticate to login',
+        cancelLabel: 'Cancel',
+        disableDeviceFallback: false,
+      });
+
+      if (result.success) {
+        // Check if there's an existing session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Session exists, navigate to home
+          Alert.alert('Success', 'Biometrics verified!');
+          router.replace('/');
+        } else {
+          // No session, prompt to sign in normally
+          Alert.alert(
+            'No Active Session',
+            'Please sign in with email/password or Google first. Biometric login will be available for future sessions.'
+          );
+        }
+      } else {
+        if (result.error !== 'UserCancel') {
+          Alert.alert('Authentication Failed', 'Biometric authentication was not successful.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Biometric login error:', error);
+      Alert.alert('Error', 'An error occurred during biometric authentication.');
+    } finally {
+      setBiometricLoading(false);
     }
   };
 
@@ -171,9 +215,34 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         {isLogin && (
-          <TouchableOpacity style={styles.googleButton} onPress={handleBiometricLogin}>
-            <Text style={styles.addButtonText}>Login with Biometrics</Text>
-          </TouchableOpacity>
+          <>
+            {/* Google Sign-In Button */}
+            <TouchableOpacity 
+              style={[styles.googleButton, loading && styles.buttonDisabled]} 
+              onPress={handleGoogleSignIn}
+              disabled={loading}
+            >
+              <Ionicons name="logo-google" size={20} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.addButtonText}>Continue with Google</Text>
+            </TouchableOpacity>
+
+            {/* Biometric Login Button */}
+            <TouchableOpacity 
+              style={[styles.biometricButton, (loading || biometricLoading) && styles.buttonDisabled]} 
+              onPress={handleBiometricLogin}
+              disabled={loading || biometricLoading}
+            >
+              <Ionicons 
+                name={Platform.OS === 'ios' ? 'finger-print' : 'finger-print-outline'} 
+                size={20} 
+                color="#fff" 
+                style={{ marginRight: 8 }} 
+              />
+              <Text style={styles.addButtonText}>
+                {biometricLoading ? 'Authenticating...' : `Login with ${Platform.OS === 'ios' ? 'FaceID/TouchID' : 'Biometrics'}`}
+              </Text>
+            </TouchableOpacity>
+          </>
         )}
 
         {isLogin && (
@@ -204,5 +273,22 @@ const styles = StyleSheet.create({
   appTitle: { fontSize: 32, fontWeight: 'bold', color: '#fff', textAlign: 'center', marginBottom: 4 },
   tagline: { fontSize: 16, color: '#aaa', textAlign: 'center', marginBottom: 24 },
   versionText: { textAlign: 'center', color: '#666', marginTop: 40, fontSize: 12 },
-  googleButton: { backgroundColor: '#4285F4', padding: 12, borderRadius: 10, alignItems: 'center', marginTop: 12 },
+  googleButton: { 
+    backgroundColor: '#4285F4', 
+    padding: 12, 
+    borderRadius: 10, 
+    alignItems: 'center', 
+    marginTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  biometricButton: { 
+    backgroundColor: '#34C759', 
+    padding: 12, 
+    borderRadius: 10, 
+    alignItems: 'center', 
+    marginTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
 });
