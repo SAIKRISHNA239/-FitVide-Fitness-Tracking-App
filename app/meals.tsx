@@ -20,6 +20,7 @@ import { useTheme } from "../context/ThemeContext";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomNavBar from './BottomNavBar';
+import dayjs from "dayjs";
 
 
 const categories = [
@@ -129,7 +130,7 @@ export default function MealsScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [quantity, setQuantity] = useState("");
-  const todayKey = new Date().toISOString().split("T")[0];
+  const todayKey = dayjs().format('YYYY-MM-DD');
 
   const handleAddToMeal = async () => {
   if (!selectedFood || !quantity) return;

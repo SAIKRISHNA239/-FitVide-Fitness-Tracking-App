@@ -40,7 +40,7 @@ To get this project up and running on your local machine, follow these steps:
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/SAIKRISHNA239/-FitVide-Fitness-Tracking-App.git
-    cd -FitVide-Fitness-Tracking-App
+    cd "-FitVide-Fitness-Tracking-App"
     ```
 2.  **Install dependencies:**
     ```bash
@@ -49,7 +49,7 @@ To get this project up and running on your local machine, follow these steps:
 3.  **Set up Firebase:**
       * Create a new project on the [Firebase Console](https://console.firebase.google.com/).
       * Enable **Authentication** (with Email/Password and Google providers), **Firestore**, and **Storage**.
-      * Copy your Firebase project's configuration and add it to `app/firebase.ts`.
+      * Copy your Firebase project's configuration and add it to `firebase.ts`.
 4.  **Run the app:**
     ```bash
     npx expo start

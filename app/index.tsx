@@ -7,6 +7,8 @@ import dayjs from "dayjs";
 import { useNutrition } from "../context/NutritionContext";
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { getCalorieBudget } from "../context/getCalorieBudget";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
 const Index: React.FC = () => {
   const router = useRouter();
@@ -17,6 +19,7 @@ const Index: React.FC = () => {
   const [calorieBudget, setCalorieBudget] = useState(3200); // default
   const [waterIntake, setWaterIntake] = useState(1000); // default intake (example)
   const waterGoal = 3000;
+  const todayKey = dayjs().format('YYYY-MM-DD');
 
   const totalCalories =
     (data.calories.breakfast || 0) +
@@ -31,15 +34,73 @@ const Index: React.FC = () => {
     fetchBudget();
   }, []);
 
+  useEffect(() => {
+    const loadWaterIntake = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      
+      try {
+        // Try to load from hydration history first (matches hydration.tsx structure)
+        const hydrationRef = doc(db, `users/${user.uid}/hydration/history`);
+        const hydrationSnap = await getDoc(hydrationRef);
+        if (hydrationSnap.exists()) {
+          const logs = hydrationSnap.data();
+          const todayLog = logs[todayKey];
+          if (todayLog?.amount) {
+            setWaterIntake(todayLog.amount);
+            return;
+          }
+        }
+        
+        // Fallback: try nutrition document
+        const nutritionRef = doc(db, "nutrition", user.uid);
+        const nutritionSnap = await getDoc(nutritionRef);
+        if (nutritionSnap.exists()) {
+          const nutritionData = nutritionSnap.data();
+          if (nutritionData.waterIntake) {
+            setWaterIntake(nutritionData.waterIntake);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading water intake:", error);
+      }
+    };
+    
+    loadWaterIntake();
+  }, [todayKey]);
+
+  const updateWaterIntake = async (newIntake: number) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    setWaterIntake(newIntake);
+    
+    try {
+      // Save to hydration history (matches hydration.tsx structure)
+      const hydrationRef = doc(db, `users/${user.uid}/hydration/history`);
+      const hydrationSnap = await getDoc(hydrationRef);
+      const existing = hydrationSnap.exists() ? hydrationSnap.data() : {};
+      
+      const updated = {
+        ...existing,
+        [todayKey]: { amount: newIntake, creatine: existing[todayKey]?.creatine || false },
+      };
+      
+      await setDoc(hydrationRef, updated);
+    } catch (error) {
+      console.error("Error saving water intake:", error);
+    }
+  };
+
   const colors = {
-        bg: "#121212",
-        text: "#ffffff",
-        subText: "#bbbbbb",
-        border: "#2c2c2c",
-        highlight: "#bb86fc",
-        card: "#333",
-        activeNav: "#bb86fc",
-        navIcon: "#888888",
+        bg: isDarkMode ? "#121212" : "#ffffff",
+        text: isDarkMode ? "#ffffff" : "#000000",
+        subText: isDarkMode ? "#bbbbbb" : "#666666",
+        border: isDarkMode ? "#2c2c2c" : "#e0e0e0",
+        highlight: isDarkMode ? "#bb86fc" : "#6200EE",
+        card: isDarkMode ? "#333" : "#f5f5f5",
+        activeNav: isDarkMode ? "#bb86fc" : "#6200EE",
+        navIcon: isDarkMode ? "#888888" : "#666666",
       };
 
   const today = dayjs();

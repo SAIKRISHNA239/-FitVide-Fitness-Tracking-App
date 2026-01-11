@@ -15,12 +15,14 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { db } from "../firebase"; // your firebase config file
-import { collection, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, deleteDoc, query, where } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext"; // to get current user
 import { AntDesign, Feather } from "@expo/vector-icons";
 import exerciseData from "../data/exercise.json";
 import { Ionicons } from "@expo/vector-icons";
 import Back from './back';
+import dayjs from "dayjs";
+import { useTheme } from "../context/ThemeContext";
 
 
 interface SetDetail {
@@ -51,10 +53,11 @@ interface ExerciseOption {
 }
 
 const LogScreen = () => {
+  const { isDarkMode } = useTheme();
   const [logs, setLogs] = useState<ExerciseLog[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    dayjs().format('YYYY-MM-DD')
   );
   const [workout, setWorkout] = useState("");
   const [region, setRegion] = useState("");
@@ -75,14 +78,23 @@ const [tag, setTag] = useState<string>("");
 const [tempRegion, setTempRegion] = useState('');
 const [tempLevel, setTempLevel] = useState('');
 const [tempExercise, setTempExercise] = useState('');
-const scrollRef = useRef<ScrollView>(null);
+const flatListRef = useRef<FlatList>(null);
 const { user } = useAuth();
+
+// Theme colors
+const colors = {
+  bg: isDarkMode ? "#121212" : "#ffffff",
+  text: isDarkMode ? "#ffffff" : "#000000",
+  subText: isDarkMode ? "#bbbbbb" : "#666666",
+  border: isDarkMode ? "#2c2c2c" : "#e0e0e0",
+  highlight: isDarkMode ? "#bb86fc" : "#6200EE",
+  card: isDarkMode ? "#1E1E1E" : "#f5f5f5",
+};
 
 
 const changeDate = (days: number) => {
-  const current = new Date(selectedDate);
-  current.setDate(current.getDate() + days);
-  setSelectedDate(current.toISOString().split("T")[0]);
+  const current = dayjs(selectedDate).add(days, 'day');
+  setSelectedDate(current.format('YYYY-MM-DD'));
 };
 
 useEffect(() => {
@@ -132,7 +144,7 @@ useEffect(() => {
 
   useEffect(() => {
     loadLogs();
-  }, [user]);
+  }, [user, selectedDate]);
 
   useEffect(() => {
     if (editId) {
@@ -168,7 +180,9 @@ useEffect(() => {
   if (!user) return;
   try {
     const userLogsRef = collection(db, "exerciseLogs", user.uid, "logs");
-    const snapshot = await getDocs(userLogsRef);
+    // Query only logs for the selected date
+    const q = query(userLogsRef, where("date", "==", selectedDate));
+    const snapshot = await getDocs(q);
     const loadedLogs = snapshot.docs.map(doc => doc.data() as ExerciseLog);
     setLogs(loadedLogs);
   } catch (error) {
@@ -207,7 +221,6 @@ useEffect(() => {
     setLogs(updatedLogs);
     saveLogs([newLog]);
     resetForm();
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   };
   
   const saveLogs = async (newLogs: ExerciseLog[]) => {
@@ -268,43 +281,49 @@ useEffect(() => {
     setTag("");
     setIntensity(0);
     setEditId(null);
-    setSelectedDate(new Date().toISOString().split("T")[0]);
+    setSelectedDate(dayjs().format('YYYY-MM-DD'));
     setModalVisible(false);
   };
 
   const handleDateChange = (event: any, selected?: Date) => {
     setShowDatePicker(false);
     if (selected) {
-      setSelectedDate(selected.toISOString().split("T")[0]);
+      setSelectedDate(dayjs(selected).format('YYYY-MM-DD'));
     }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.bg }]}>
       <Back />
       <FlatList
-        data={logs.filter((log) => log.date === selectedDate)}
+        ref={flatListRef}
+        data={logs}
         keyExtractor={(item) => item.id}
+        onContentSizeChange={() => {
+          if (logs.length > 0) {
+            flatListRef.current?.scrollToEnd({ animated: true });
+          }
+        }}
         renderItem={({ item }) => (
-          <View style={styles.logItem}>
-            <Text style={styles.text}>{item.date} - {item.workout}</Text>
-            <Text style={styles.text}>{item.region} | {item.level}</Text>
-            <Text style={styles.text}>{item.exercise}</Text>
+          <View style={[styles.logItem, { backgroundColor: colors.card }]}>
+            <Text style={[styles.text, { color: colors.text }]}>{item.date} - {item.workout}</Text>
+            <Text style={[styles.text, { color: colors.text }]}>{item.region} | {item.level}</Text>
+            <Text style={[styles.text, { color: colors.text }]}>{item.exercise}</Text>
   
             {Array.isArray(item.sets) ? (
               item.sets.map((s: SetDetail, idx: number) => (
-                <Text key={idx} style={styles.text}>
+                <Text key={idx} style={[styles.text, { color: colors.text }]}>
                   Set {s.set}: {s.reps} reps × {s.weight} kg
                 </Text>
               ))
             ) : (
-              <Text style={styles.text}>Sets: {item.sets}</Text>
+              <Text style={[styles.text, { color: colors.text }]}>Sets: {item.sets}</Text>
             )}
   
-            {item.tag && <Text style={styles.text}>🏷️ {item.tag}</Text>}
+            {item.tag && <Text style={[styles.text, { color: colors.text }]}>🏷️ {item.tag}</Text>}
   
             {item.intensity && (
-              <Text style={styles.text}>
+              <Text style={[styles.text, { color: colors.text }]}>
                 Intensity: {"⭐".repeat(item.intensity)}{"☆".repeat(5 - item.intensity)}
               </Text>
             )}
@@ -322,16 +341,16 @@ useEffect(() => {
         ListHeaderComponent={
           <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", marginBottom: 12 }}>
             <TouchableOpacity onPress={() => changeDate(-1)} style={{ padding: 10 }}>
-              <Text style={{ color: "#fff", fontSize: 20 }}>⬅️</Text>
+              <Text style={{ color: colors.text, fontSize: 20 }}>⬅️</Text>
             </TouchableOpacity>
-            <Text style={{ color: "#fff", fontSize: 18, marginHorizontal: 10 }}>{selectedDate}</Text>
+            <Text style={{ color: colors.text, fontSize: 18, marginHorizontal: 10 }}>{selectedDate}</Text>
             <TouchableOpacity onPress={() => changeDate(1)} style={{ padding: 10 }}>
-              <Text style={{ color: "#fff", fontSize: 20 }}>➡️</Text>
+              <Text style={{ color: colors.text, fontSize: 20 }}>➡️</Text>
             </TouchableOpacity>
           </View>
         }
         ListFooterComponent={
-          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={[styles.addButton, { backgroundColor: colors.highlight }]}>
             <Text style={styles.addButtonText}>+ Log Workout</Text>
           </TouchableOpacity>
         }
@@ -340,15 +359,15 @@ useEffect(() => {
   
       {/* Modal */}
       <Modal visible={modalVisible} animationType="slide">
-  <View style={styles.modalContainer}>
+  <View style={[styles.modalContainer, { backgroundColor: colors.bg }]}>
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePicker}>
-        <Text style={styles.text}>📅 {selectedDate}</Text>
+      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={[styles.datePicker, { backgroundColor: colors.card }]}>
+        <Text style={[styles.text, { color: colors.text }]}>📅 {selectedDate}</Text>
       </TouchableOpacity>
 
       {showDatePicker && (
         <DateTimePicker
-          value={new Date(selectedDate)}
+          value={dayjs(selectedDate).toDate()}
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={handleDateChange}
@@ -356,38 +375,38 @@ useEffect(() => {
       )}
 
       {/* Dropdowns */}
-      <View style={styles.picker}>
-        <Picker selectedValue={workout} onValueChange={setWorkout} dropdownIconColor="#fff">
-          <Picker.Item label="Select Workout" value="" />
+      <View style={[styles.picker, { backgroundColor: colors.card }]}>
+        <Picker selectedValue={workout} onValueChange={setWorkout} dropdownIconColor={colors.text}>
+          <Picker.Item label="Select Workout" value="" color={colors.text} />
           {availableWorkouts.map((item) => (
-            <Picker.Item key={item} label={item} value={item} />
+            <Picker.Item key={item} label={item} value={item} color={colors.text} />
           ))}
         </Picker>
       </View>
 
-      <View style={styles.picker}>
-        <Picker selectedValue={region} onValueChange={setRegion} enabled={!!workout} dropdownIconColor="#fff">
-          <Picker.Item label="Select Region" value="" />
+      <View style={[styles.picker, { backgroundColor: colors.card }]}>
+        <Picker selectedValue={region} onValueChange={setRegion} enabled={!!workout} dropdownIconColor={colors.text}>
+          <Picker.Item label="Select Region" value="" color={colors.text} />
           {availableRegions.map((item) => (
-            <Picker.Item key={item} label={item} value={item} />
+            <Picker.Item key={item} label={item} value={item} color={colors.text} />
           ))}
         </Picker>
       </View>
 
-      <View style={styles.picker}>
-        <Picker selectedValue={level} onValueChange={setLevel} enabled={!!region} dropdownIconColor="#fff">
-          <Picker.Item label="Select Level" value="" />
+      <View style={[styles.picker, { backgroundColor: colors.card }]}>
+        <Picker selectedValue={level} onValueChange={setLevel} enabled={!!region} dropdownIconColor={colors.text}>
+          <Picker.Item label="Select Level" value="" color={colors.text} />
           {availableLevels.map((item) => (
-            <Picker.Item key={item} label={item} value={item} />
+            <Picker.Item key={item} label={item} value={item} color={colors.text} />
           ))}
         </Picker>
       </View>
 
-      <View style={styles.picker}>
-        <Picker selectedValue={exercise} onValueChange={setExercise} enabled={!!level} dropdownIconColor="#fff">
-          <Picker.Item label="Select Exercise" value="" />
+      <View style={[styles.picker, { backgroundColor: colors.card }]}>
+        <Picker selectedValue={exercise} onValueChange={setExercise} enabled={!!level} dropdownIconColor={colors.text}>
+          <Picker.Item label="Select Exercise" value="" color={colors.text} />
           {availableExercises.map((item) => (
-            <Picker.Item key={item} label={item} value={item} />
+            <Picker.Item key={item} label={item} value={item} color={colors.text} />
           ))}
         </Picker>
       </View>
@@ -396,11 +415,12 @@ useEffect(() => {
       <View style={{ marginBottom: 12 }}>
         {setInputs.map((setItem, index) => (
           <View key={index} style={{ marginBottom: 8 }}>
-            <Text style={styles.text}>Set {setItem.set}</Text>
+            <Text style={[styles.text, { color: colors.text }]}>Set {setItem.set}</Text>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <TextInput
-                style={[styles.input, { flex: 1 }]}
+                style={[styles.input, { flex: 1, backgroundColor: colors.card, color: colors.text }]}
                 placeholder="Reps"
+                placeholderTextColor={colors.subText}
                 keyboardType="numeric"
                 value={setItem.reps.toString()}
                 onChangeText={(text) => {
@@ -410,8 +430,9 @@ useEffect(() => {
                 }}
               />
               <TextInput
-                style={[styles.input, { flex: 1 }]}
+                style={[styles.input, { flex: 1, backgroundColor: colors.card, color: colors.text }]}
                 placeholder="Weight"
+                placeholderTextColor={colors.subText}
                 keyboardType="numeric"
                 value={setItem.weight.toString()}
                 onChangeText={(text) => {
@@ -425,7 +446,7 @@ useEffect(() => {
         ))}
         <TouchableOpacity
           onPress={() => setSetInputs(prev => [...prev, { set: prev.length + 1, reps: 0, weight: 0 }])}
-          style={[styles.addButton, { marginTop: 8 }]}
+          style={[styles.addButton, { marginTop: 8, backgroundColor: colors.highlight }]}
         >
           <Text style={styles.addButtonText}>+ Add Set</Text>
         </TouchableOpacity>
@@ -433,15 +454,15 @@ useEffect(() => {
 
       {/* Tag + Intensity */}
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
         placeholder="Tag (e.g., PR, Light Day)"
-        placeholderTextColor="#aaa"
+        placeholderTextColor={colors.subText}
         value={tag}
         onChangeText={setTag}
       />
 
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-        <Text style={[styles.text, { marginRight: 8 }]}>Intensity:</Text>
+        <Text style={[styles.text, { marginRight: 8, color: colors.text }]}>Intensity:</Text>
         {[1, 2, 3, 4, 5].map((value) => (
           <TouchableOpacity key={value} onPress={() => setIntensity(value)}>
             <Text style={{ fontSize: 24 }}>{value <= intensity ? "⭐" : "☆"}</Text>
@@ -471,16 +492,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#121212",
   },
   logItem: {
-    backgroundColor: "#1E1E1E",
     padding: 12,
     marginBottom: 10,
     borderRadius: 10,
   },
   text: {
-    color: "#fff",
     fontSize: 16,
     marginBottom: 2,
   },
@@ -493,7 +511,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   addButton: {
-    backgroundColor: "#6200EE",
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
@@ -505,19 +522,15 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "#1E1E1E",
     padding: 20,
     justifyContent: "center",
   },
   datePicker: {
-    backgroundColor: "#2C2C2C",
     padding: 12,
     borderRadius: 10,
     marginBottom: 12,
   },
   input: {
-    backgroundColor: "#2C2C2C",
-    color: "#fff",
     padding: 12,
     borderRadius: 10,
     marginBottom: 12,
@@ -548,10 +561,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   picker: {
-    backgroundColor: "#2C2C2C",
     borderRadius: 10,
     marginBottom: 12,
-    color: "#fff",
   },
   scrollViewContent: {
     paddingBottom: 100, 

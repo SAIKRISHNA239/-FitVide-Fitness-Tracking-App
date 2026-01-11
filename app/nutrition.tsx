@@ -19,6 +19,7 @@ import { getStyles } from "../styles/nutritionstyle";
 import Back from './back';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db, auth } from "../firebase";
+import dayjs from "dayjs";
 
 const meals = ["Breakfast", "Lunch", "Dinner"];
 
@@ -38,7 +39,7 @@ const { styles: stylesSheet, colors } = getStyles(isDarkMode);
   });
   const [editIndex, setEditIndex] = useState<{ meal: string; index: number } | null>(null);
   const [editQuantity, setEditQuantity] = useState("");
-  const todayKey = new Date().toISOString().split("T")[0];
+  const todayKey = dayjs().format('YYYY-MM-DD');
 
   const syncContextFromLog = (logData: any) => {
     for (const meal of meals) {

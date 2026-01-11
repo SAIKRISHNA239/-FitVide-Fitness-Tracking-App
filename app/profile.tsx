@@ -5,7 +5,7 @@ import {
   StyleSheet, ScrollView, Alert
 } from "react-native";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
 import { app } from "../firebase";
 
@@ -119,10 +119,75 @@ export default function ProfileScreen() {
   };
 
   const deleteProfile = async () => {
-    if (user) await deleteDoc(doc(db, "users", user.uid));
-    setAge(""); setHeight(""); setWeight("");
-    setMacroTargets(null); setCustomMacroTargets(null);
-    setIsEditing(true);
+    if (!user) return;
+    
+    Alert.alert(
+      "Confirm Delete",
+      "This will permanently delete all your data including workouts, meals, and nutrition logs. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // 1. Delete all exercise logs
+              const exerciseLogsRef = collection(db, "exerciseLogs", user.uid, "logs");
+              const exerciseLogsSnapshot = await getDocs(exerciseLogsRef);
+              const exerciseDeletePromises = exerciseLogsSnapshot.docs.map((docSnap) =>
+                deleteDoc(doc(db, "exerciseLogs", user.uid, "logs", docSnap.id))
+              );
+              await Promise.all(exerciseDeletePromises);
+              
+              // 2. Delete all meal documents where ID starts with {uid}_
+              const mealsRef = collection(db, "meals");
+              const mealsSnapshot = await getDocs(mealsRef);
+              const mealDeletePromises = mealsSnapshot.docs
+                .filter((docSnap) => docSnap.id.startsWith(`${user.uid}_`))
+                .map((docSnap) => deleteDoc(doc(db, "meals", docSnap.id)));
+              await Promise.all(mealDeletePromises);
+              
+              // 3. Delete other log collections (hydration, nutrition, sleep)
+              const logCollections = ["hydrationLogs", "dailyNutritionLogs", "sleepLogs"];
+              for (const collectionName of logCollections) {
+                const logsRef = collection(db, collectionName, user.uid, "logs");
+                const logsSnapshot = await getDocs(logsRef);
+                const logDeletePromises = logsSnapshot.docs.map((docSnap) =>
+                  deleteDoc(doc(db, collectionName, user.uid, "logs", docSnap.id))
+                );
+                await Promise.all(logDeletePromises);
+              }
+              
+              // 4. Delete nutrition document
+              const nutritionRef = doc(db, "nutrition", user.uid);
+              const nutritionSnap = await getDoc(nutritionRef);
+              if (nutritionSnap.exists()) {
+                await deleteDoc(nutritionRef);
+              }
+              
+              // 5. Delete hydration history (if stored separately)
+              const hydrationRef = doc(db, `users/${user.uid}/hydration/history`);
+              const hydrationSnap = await getDoc(hydrationRef);
+              if (hydrationSnap.exists()) {
+                await deleteDoc(hydrationRef);
+              }
+              
+              // 6. Finally, delete user document
+              await deleteDoc(doc(db, "users", user.uid));
+              
+              setAge(""); setHeight(""); setWeight("");
+              setMacroTargets(null); setCustomMacroTargets(null);
+              setIsEditing(true);
+              
+              Alert.alert("Success", "Profile and all associated data have been deleted.");
+            } catch (error) {
+              console.error("Error deleting profile:", error);
+              Alert.alert("Error", "Failed to delete profile. Please try again.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (

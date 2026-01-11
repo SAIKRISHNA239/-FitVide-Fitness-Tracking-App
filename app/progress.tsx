@@ -79,8 +79,10 @@ const ProgressScreen = () => {
         ...sleepLogs.map((l) => l.date),
       ]);
 
+      // Data is already sorted by date desc from Firestore queries, limit to last 30 days
       const merged = Array.from(allDatesSet)
         .sort((a, b) => b.localeCompare(a))
+        .slice(0, 30) // Limit to last 30 days
         .map((date) => {
           const hydration = hydrationLogs.find((l) => l.date === date);
           const nutrition = nutritionLogs.find((l) => l.date === date);
