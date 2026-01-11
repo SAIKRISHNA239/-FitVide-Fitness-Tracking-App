@@ -11,7 +11,8 @@ type AuthContextType = {
   loading: boolean;
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  googleLogin: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>; // Alias for backward compatibility
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   logout: async () => {},
   deleteAccount: async () => {},
+  googleLogin: async () => {},
   signInWithGoogle: async () => {},
 });
 
@@ -45,46 +47,89 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const logout = async () => {
+    // Always clear user state, even if Supabase signOut fails
+    // This ensures the user is logged out locally regardless of network issues
     try {
+      // Attempt to sign out from Supabase
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      // Clear user state immediately
-      setUser(null);
+      if (error) {
+        console.warn('Supabase signOut error (continuing with local logout):', error);
+        // Don't throw - we'll still clear local state
+      }
     } catch (error) {
-      console.error('Logout Error:', error);
-      throw error;
+      console.warn('Logout error (continuing with local logout):', error);
+      // Don't throw - we'll still clear local state
+    } finally {
+      // ALWAYS clear user state, even if Supabase fails
+      // This ensures the UI updates and user is logged out locally
+      setUser(null);
+      setLoading(false);
+      
+      // On web, explicitly clear localStorage to ensure session is removed
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+        try {
+          // Clear all Supabase-related keys from localStorage
+          const keysToRemove: string[] = [];
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const key = window.localStorage.key(i);
+            if (key && (key.includes('supabase') || key.includes('sb-'))) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => {
+            try {
+              window.localStorage.removeItem(key);
+            } catch (e) {
+              console.warn(`Failed to remove ${key} from localStorage:`, e);
+            }
+          });
+        } catch (error) {
+          console.warn('Error clearing localStorage:', error);
+        }
+      }
+      
+      // Force a session check to ensure state is synced
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // If session still exists, try signOut again
+          await supabase.auth.signOut();
+          // Clear localStorage again after second signOut attempt
+          if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+            try {
+              const keysToRemove: string[] = [];
+              for (let i = 0; i < window.localStorage.length; i++) {
+                const key = window.localStorage.key(i);
+                if (key && (key.includes('supabase') || key.includes('sb-'))) {
+                  keysToRemove.push(key);
+                }
+              }
+              keysToRemove.forEach(key => window.localStorage.removeItem(key));
+            } catch (e) {
+              // Ignore
+            }
+          }
+        }
+      } catch (error) {
+        // Ignore errors - we've already cleared local state
+        console.warn('Session check error during logout:', error);
+      }
     }
   };
 
-  const signInWithGoogle = async () => {
+  const googleLogin = async () => {
     try {
-      // Generate redirect URL based on platform
-      let redirectTo: string;
-      
-      if (Platform.OS === 'web') {
-        // For web, use the current origin
-        if (typeof window !== 'undefined') {
-          redirectTo = `${window.location.origin}/auth/callback`;
-        } else {
-          // Fallback for SSR
-          redirectTo = AuthSession.makeRedirectUri({
-            scheme: 'fitvide',
-            path: 'auth/callback',
-          });
-        }
-      } else {
-        // For mobile, use expo-auth-session to generate redirect URI
-        const redirectUri = AuthSession.makeRedirectUri({
-          scheme: 'fitvide',
-          path: 'auth/callback',
-        });
-        redirectTo = redirectUri;
-      }
+      // Generate redirect URL using expo-auth-session with fitvide scheme
+      const redirectUri = AuthSession.makeRedirectUri({
+        scheme: 'fitvide',
+        path: 'auth/callback',
+      });
 
+      // Use Supabase OAuth with Google provider
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo,
+          redirectTo: redirectUri,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -102,6 +147,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       throw error;
     }
   };
+
+  // Alias for backward compatibility
+  const signInWithGoogle = googleLogin;
 
   const deleteAccount = async () => {
     try {
@@ -135,7 +183,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, deleteAccount, signInWithGoogle }}>
+    <AuthContext.Provider value={{ user, loading, logout, deleteAccount, googleLogin, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

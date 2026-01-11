@@ -12,7 +12,7 @@ import Checkbox from 'expo-checkbox';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signInWithGoogle } = useAuth();
+  const { googleLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,9 +26,65 @@ export default function LoginScreen() {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/.test(pw);
   };
 
+  const getErrorMessage = (error: any): string => {
+    if (!error) return 'An unexpected error occurred';
+    
+    const errorCode = error.code || error.status;
+    const errorMessage = error.message || '';
+
+    // Handle specific Supabase error codes
+    switch (errorCode) {
+      case 'invalid_credentials':
+      case 'invalid_grant':
+        return 'Invalid email or password. Please try again.';
+      
+      case 'email_not_confirmed':
+        return 'Please verify your email address before logging in. Check your inbox for the verification link.';
+      
+      case 'user_not_found':
+        return 'No account found with this email address. Please sign up first.';
+      
+      case 'email_address_not_authorized':
+        return 'This email address is not authorized. Please contact support.';
+      
+      case 'signup_disabled':
+        return 'New signups are currently disabled. Please contact support.';
+      
+      case 'user_already_registered':
+      case 'email_already_exists':
+        return 'An account with this email already exists. Please log in instead.';
+      
+      case 'weak_password':
+        return 'Password is too weak. Please use a stronger password.';
+      
+      case 'too_many_requests':
+        return 'Too many requests. Please wait a moment and try again.';
+      
+      default:
+        // Check error message for common patterns
+        if (errorMessage.includes('already registered') || errorMessage.includes('already exists')) {
+          return 'An account with this email already exists. Please log in instead.';
+        }
+        if (errorMessage.includes('email') && errorMessage.includes('confirm')) {
+          return 'Please verify your email address before logging in. Check your inbox for the verification link.';
+        }
+        if (errorMessage.includes('Invalid login credentials')) {
+          return 'Invalid email or password. Please try again.';
+        }
+        return errorMessage || 'An error occurred. Please try again.';
+    }
+  };
+
   const handleAuth = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields.');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
       return;
     }
 
@@ -51,23 +107,96 @@ export default function LoginScreen() {
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          const errorMsg = getErrorMessage(error);
+          Alert.alert('Login Failed', errorMsg);
+          return;
+        }
+
+        // Check if email is confirmed
+        if (data.user && !data.user.email_confirmed_at) {
+          Alert.alert(
+            'Email Not Verified',
+            'Please verify your email address before logging in. Check your inbox for the verification link.',
+            [
+              {
+                text: 'Resend Verification',
+                onPress: async () => {
+                  try {
+                    const { error: resendError } = await supabase.auth.resend({
+                      type: 'signup',
+                      email: email,
+                    });
+                    if (resendError) throw resendError;
+                    Alert.alert('Success', 'Verification email sent! Please check your inbox.');
+                  } catch (err: any) {
+                    Alert.alert('Error', err.message || 'Failed to resend verification email');
+                  }
+                },
+              },
+              { text: 'OK' },
+            ]
+          );
+          return;
+        }
 
         // Navigation will be handled by AuthContext
         router.replace('/');
       } else {
+        // Sign up
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: Platform.OS === 'web' 
+              ? `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`
+              : 'fitvide://auth/callback',
+          },
         });
 
-        if (error) throw error;
+        if (error) {
+          const errorMsg = getErrorMessage(error);
+          Alert.alert('Signup Failed', errorMsg);
+          return;
+        }
 
-        Alert.alert('Success', 'Account created! Please check your email to verify your account.');
-        setIsLogin(true);
+        // Check if email confirmation is required
+        if (data.user && !data.user.email_confirmed_at) {
+          Alert.alert(
+            'Account Created!',
+            'Please check your email to verify your account before logging in. We sent a verification link to ' + email,
+            [
+              {
+                text: 'Resend Email',
+                onPress: async () => {
+                  try {
+                    const { error: resendError } = await supabase.auth.resend({
+                      type: 'signup',
+                      email: email,
+                    });
+                    if (resendError) throw resendError;
+                    Alert.alert('Success', 'Verification email sent! Please check your inbox.');
+                  } catch (err: any) {
+                    Alert.alert('Error', err.message || 'Failed to resend verification email');
+                  }
+                },
+              },
+              {
+                text: 'OK',
+                onPress: () => setIsLogin(true),
+              },
+            ]
+          );
+        } else {
+          // Email confirmation not required (shouldn't happen with default Supabase settings)
+          Alert.alert('Success', 'Account created! You can now log in.');
+          setIsLogin(true);
+        }
       }
     } catch (error: any) {
-      Alert.alert('Auth Error', error.message || 'An error occurred');
+      console.error('Auth error:', error);
+      const errorMsg = getErrorMessage(error);
+      Alert.alert('Error', errorMsg);
     } finally {
       setLoading(false);
     }
@@ -76,10 +205,24 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      await googleLogin();
+      // On mobile, OAuth will open browser/Google sign-in
+      // On web, it will redirect
+      // The session will be established via deep link/redirect
       // Navigation will be handled by AuthContext when session is established
+      
+      // For mobile, show a message that the browser will open
+      if (Platform.OS !== 'web') {
+        Alert.alert(
+          'Opening Google Sign-In',
+          'You will be redirected to Google to sign in. After signing in, you will be redirected back to the app.',
+          [{ text: 'OK' }]
+        );
+      }
     } catch (error: any) {
-      Alert.alert('Google Sign-In Error', error.message || 'Failed to sign in with Google');
+      console.error('Google Sign-In Error:', error);
+      const errorMsg = error.message || 'Failed to sign in with Google. Please try again.';
+      Alert.alert('Google Sign-In Error', errorMsg);
     } finally {
       setLoading(false);
     }
